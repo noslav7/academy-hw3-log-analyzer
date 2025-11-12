@@ -1,0 +1,152 @@
+package academy.stats;
+
+import academy.log.LogEntry;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
+
+public class StatsCollector {
+
+    private final List<Long> responseSizes = new ArrayList<>();
+    private final Map<String, LongAdder> resourceCounters = new ConcurrentHashMap<>();
+    private final Map<Integer, LongAdder> responseCodeCounters = new ConcurrentHashMap<>();
+    private final Map<LocalDate, LongAdder> requestsPerDateCounters = new ConcurrentHashMap<>();
+    private final LinkedHashMap<String, LongAdder> protocolCounters = new LinkedHashMap<>();
+
+    private long totalRequestsCount;
+    private long responseSizeSum;
+    private long responseSizeMax;
+    private LocalDate firstRequestDate;
+    private LocalDate lastRequestDate;
+
+    public void register(LogEntry entry) {
+        totalRequestsCount++;
+        responseSizeSum += entry.responseSize();
+        responseSizeMax = Math.max(responseSizeMax, entry.responseSize());
+        responseSizes.add(entry.responseSize());
+
+        if (!entry.resource().isBlank()) {
+            resourceCounters.computeIfAbsent(entry.resource(), key -> new LongAdder()).increment();
+        }
+
+        responseCodeCounters.computeIfAbsent(entry.statusCode(), key -> new LongAdder()).increment();
+
+        LocalDate date = entry.timestamp().toLocalDate();
+        requestsPerDateCounters.computeIfAbsent(date, key -> new LongAdder()).increment();
+
+        if (!entry.protocol().isBlank()) {
+            protocolCounters.computeIfAbsent(entry.protocol(), key -> new LongAdder()).increment();
+        }
+
+        if (firstRequestDate == null || date.isBefore(firstRequestDate)) {
+            firstRequestDate = date;
+        }
+        if (lastRequestDate == null || date.isAfter(lastRequestDate)) {
+            lastRequestDate = date;
+        }
+    }
+
+    public StatsResult buildResult(List<String> files) {
+        ResponseSizeStats responseSizeStats = new ResponseSizeStats(
+                toScaledDecimal(calculateAverage()),
+                toScaledDecimal(responseSizeMax),
+                toScaledDecimal(calculatePercentile(0.95)));
+
+        List<ResourceStat> topResources = resourceCounters.entrySet().stream()
+                .map(entry -> new ResourceStat(entry.getKey(), entry.getValue().sum()))
+                .sorted(Comparator.comparingLong(ResourceStat::totalRequestsCount).reversed()
+                        .thenComparing(ResourceStat::resource))
+                .limit(10)
+                .collect(Collectors.toList());
+
+        List<ResponseCodeStat> responseCodeStats = responseCodeCounters.entrySet().stream()
+                .map(entry -> new ResponseCodeStat(entry.getKey(), entry.getValue().sum()))
+                .sorted(Comparator.<ResponseCodeStat>comparingLong(ResponseCodeStat::totalResponsesCount)
+                        .reversed()
+                        .thenComparingInt(ResponseCodeStat::code))
+                .collect(Collectors.toList());
+
+        List<RequestPerDateStat> perDateStats = requestsPerDateCounters.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> {
+                    long count = entry.getValue().sum();
+                    BigDecimal percentage = totalRequestsCount == 0
+                            ? BigDecimal.ZERO
+                            : BigDecimal.valueOf(count * 100.0d / totalRequestsCount)
+                                    .setScale(2, RoundingMode.HALF_UP);
+                    String weekday =
+                            entry.getKey().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+                    return new RequestPerDateStat(entry.getKey(), weekday, count, percentage);
+                })
+                .collect(Collectors.toList());
+
+        Comparator<Map.Entry<String, LongAdder>> protocolComparator =
+                Comparator.<Map.Entry<String, LongAdder>, Boolean>comparing(
+                                entry -> !entry.getKey().startsWith("HTTP/"))
+                        .thenComparing((Map.Entry<String, LongAdder> entry) -> entry.getValue().sum(), Comparator.reverseOrder())
+                        .thenComparing(Map.Entry::getKey);
+
+        List<String> protocols = protocolCounters.entrySet().stream()
+                .sorted(protocolComparator)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        return new StatsResult(
+                List.copyOf(files),
+                totalRequestsCount,
+                responseSizeStats,
+                topResources,
+                responseCodeStats,
+                perDateStats,
+                protocols,
+                firstRequestDate,
+                lastRequestDate);
+    }
+
+    private double calculateAverage() {
+        if (totalRequestsCount == 0) {
+            return 0.0d;
+        }
+        return (double) responseSizeSum / totalRequestsCount;
+    }
+
+    private double calculatePercentile(double percentile) {
+        if (responseSizes.isEmpty()) {
+            return 0.0d;
+        }
+
+        List<Long> sorted = responseSizes.stream().sorted().collect(Collectors.toList());
+        double rank = percentile * (sorted.size() - 1);
+        int lowerIndex = (int) Math.floor(rank);
+        int upperIndex = (int) Math.ceil(rank);
+
+        if (lowerIndex == upperIndex) {
+            return sorted.get(lowerIndex);
+        }
+
+        double lowerValue = sorted.get(lowerIndex);
+        double upperValue = sorted.get(upperIndex);
+        double weight = rank - lowerIndex;
+
+        return lowerValue + weight * (upperValue - lowerValue);
+    }
+
+    private static BigDecimal toScaledDecimal(double value) {
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static BigDecimal toScaledDecimal(long value) {
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
+    }
+}
+
