@@ -1,6 +1,8 @@
 package academy;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import academy.support.TestUtils;
 import java.io.IOException;
@@ -29,8 +31,11 @@ public class ApplicationTest {
                         "--from",
                         "2015-05-17");
 
-        assertThat(exitCode).isEqualTo(0);
-        assertThat(Files.exists(output)).isTrue();
-        assertThat(Files.readString(output)).contains("#### Общая информация");
+        assertAll(
+                () -> assertEquals(0, exitCode, "exit code"),
+                () -> assertTrue(Files.exists(output), "output file exists"),
+                () -> assertTrue(
+                        Files.readString(output).contains("#### Общая информация"),
+                        "report contains expected header"));
     }
 }

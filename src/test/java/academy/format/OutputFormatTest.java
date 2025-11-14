@@ -1,0 +1,25 @@
+package academy.format;
+
+import academy.exception.InvalidArgumentsException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class OutputFormatTest {
+
+    @Test
+    void GivenSupportedFormatName_WhenFrom_ThenReturnsExpectedFormat() {
+        assertAll(
+                () -> assertEquals(OutputFormat.JSON, OutputFormat.from("json")),
+                () -> assertEquals(OutputFormat.MARKDOWN, OutputFormat.from("MARKDOWN")));
+    }
+
+    @Test
+    void GivenUnsupportedValue_WhenFrom_ThenThrowsInvalidArgumentsException() {
+        assertThrows(InvalidArgumentsException.class, () -> OutputFormat.from("xml"));
+    }
+}
+
+
