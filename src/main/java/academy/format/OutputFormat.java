@@ -4,7 +4,8 @@ import academy.exception.InvalidArgumentsException;
 
 public enum OutputFormat {
     JSON("json", ".json"),
-    MARKDOWN("markdown", ".md");
+    MARKDOWN("markdown", ".md"),
+    ADOC("adoc", ".adoc");
 
     private final String cliName;
     private final String fileExtension;

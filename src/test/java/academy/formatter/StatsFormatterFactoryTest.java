@@ -22,6 +22,13 @@ class StatsFormatterFactoryTest {
 
         assertEquals(MarkdownStatsFormatter.class, formatter.getClass());
     }
+
+    @Test
+    void GivenAdocFormat_WhenCreate_ThenReturnsAdocFormatter() {
+        StatsFormatter formatter = factory.create(OutputFormat.ADOC);
+
+        assertEquals(AdocStatsFormatter.class, formatter.getClass());
+    }
 }
 
 

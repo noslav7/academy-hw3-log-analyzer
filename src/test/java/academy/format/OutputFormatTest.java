@@ -13,7 +13,8 @@ class OutputFormatTest {
     void GivenSupportedFormatName_WhenFrom_ThenReturnsExpectedFormat() {
         assertAll(
                 () -> assertEquals(OutputFormat.JSON, OutputFormat.from("json")),
-                () -> assertEquals(OutputFormat.MARKDOWN, OutputFormat.from("MARKDOWN")));
+                () -> assertEquals(OutputFormat.MARKDOWN, OutputFormat.from("MARKDOWN")),
+                () -> assertEquals(OutputFormat.ADOC, OutputFormat.from("AdOc")));
     }
 
     @Test

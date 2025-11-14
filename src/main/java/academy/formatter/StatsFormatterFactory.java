@@ -8,6 +8,7 @@ public class StatsFormatterFactory {
         return switch (format) {
             case JSON -> new JsonStatsFormatter();
             case MARKDOWN -> new MarkdownStatsFormatter();
+            case ADOC -> new AdocStatsFormatter();
         };
     }
 }

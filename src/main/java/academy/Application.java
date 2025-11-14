@@ -45,7 +45,7 @@ public class Application implements java.util.concurrent.Callable<Integer> {
     @Option(
             names = {"-f", "--format"},
             required = true,
-            description = "Output format: json, markdown")
+            description = "Output format: json, markdown, adoc")
     private String formatOption;
 
     @Option(

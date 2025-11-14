@@ -48,15 +48,17 @@ public class StatsReportTest {
     }
 
     @Test
-    @DisplayName("Сохранение статистики в формате ADOC не поддерживается")
+    @DisplayName("Сохранение статистики в формате ADOC")
     void adocTest(@TempDir Path tempDir) throws IOException {
         Path log = TestUtils.createLogFile(tempDir, "access.log", List.of(TestUtils.SAMPLE_LOG_LINE));
-        Path output = tempDir.resolve("report.ad");
+        Path output = tempDir.resolve("report.adoc");
 
         int exitCode = TestUtils.newCommandLine()
                 .execute("--path", log.toString(), "--format", "adoc", "--output", output.toString());
 
-        assertThat(exitCode).isEqualTo(2);
-        assertThat(Files.exists(output)).isFalse();
+        assertThat(exitCode).isEqualTo(0);
+        String content = Files.readString(output);
+        assertThat(content).contains("=== Общая информация");
+        assertThat(content).contains("+access.log+");
     }
 }
