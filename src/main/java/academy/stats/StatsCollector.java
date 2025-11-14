@@ -4,12 +4,10 @@ import academy.log.LogEntry;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
@@ -20,7 +18,7 @@ public class StatsCollector {
     private final List<Long> responseSizes = new ArrayList<>();
     private final Map<String, LongAdder> resourceCounters = new ConcurrentHashMap<>();
     private final Map<Integer, LongAdder> responseCodeCounters = new ConcurrentHashMap<>();
-    private final Map<LocalDate, LongAdder> requestsPerDateCounters = new ConcurrentHashMap<>();
+    private final RequestsPerDateStatistics requestsPerDateStatistics = new RequestsPerDateStatistics();
     private final LinkedHashMap<String, LongAdder> protocolCounters = new LinkedHashMap<>();
 
     private long totalRequestsCount;
@@ -42,7 +40,7 @@ public class StatsCollector {
         responseCodeCounters.computeIfAbsent(entry.statusCode(), key -> new LongAdder()).increment();
 
         LocalDate date = entry.timestamp().toLocalDate();
-        requestsPerDateCounters.computeIfAbsent(date, key -> new LongAdder()).increment();
+        requestsPerDateStatistics.register(date);
 
         if (!entry.protocol().isBlank()) {
             protocolCounters.computeIfAbsent(entry.protocol(), key -> new LongAdder()).increment();
@@ -76,19 +74,7 @@ public class StatsCollector {
                         .thenComparingInt(ResponseCodeStat::code))
                 .collect(Collectors.toList());
 
-        List<RequestPerDateStat> perDateStats = requestsPerDateCounters.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .map(entry -> {
-                    long count = entry.getValue().sum();
-                    BigDecimal percentage = totalRequestsCount == 0
-                            ? BigDecimal.ZERO
-                            : BigDecimal.valueOf(count * 100.0d / totalRequestsCount)
-                                    .setScale(2, RoundingMode.HALF_UP);
-                    String weekday =
-                            entry.getKey().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
-                    return new RequestPerDateStat(entry.getKey(), weekday, count, percentage);
-                })
-                .collect(Collectors.toList());
+        List<RequestPerDateStat> perDateStats = requestsPerDateStatistics.build(totalRequestsCount);
 
         Comparator<Map.Entry<String, LongAdder>> protocolComparator =
                 Comparator.<Map.Entry<String, LongAdder>, Boolean>comparing(
