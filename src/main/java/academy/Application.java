@@ -2,31 +2,25 @@ package academy;
 
 import academy.exception.InvalidArgumentsException;
 import academy.format.OutputFormat;
-import academy.formatter.JsonStatsFormatter;
-import academy.formatter.MarkdownStatsFormatter;
-import academy.formatter.StatsFormatter;
+import academy.formatter.StatsFormatterFactory;
 import academy.input.InputSourceResolver;
-import academy.input.ResolvedLogSource;
 import academy.log.LogEntryParser;
 import academy.service.DateRange;
+import academy.service.DateRangeFactory;
+import academy.service.LogAnalysisRequest;
+import academy.service.LogAnalyzer;
 import academy.service.LogProcessingService;
-import academy.stats.StatsCollector;
-import academy.stats.StatsResult;
-import java.io.BufferedReader;
+import academy.service.OutputFilePreparer;
+import academy.service.OutputFileWriter;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -68,6 +62,23 @@ public class Application implements java.util.concurrent.Callable<Integer> {
 
     private static final String UNDEFINED_PARAMETER = "undefined";
 
+    private final DateRangeFactory dateRangeFactory;
+    private final OutputFilePreparer outputFilePreparer;
+    private final LogAnalyzer logAnalyzer;
+
+    public Application() {
+        this(new DateRangeFactory(), new OutputFilePreparer(), createDefaultLogAnalyzer());
+    }
+
+    Application(
+            DateRangeFactory dateRangeFactory,
+            OutputFilePreparer outputFilePreparer,
+            LogAnalyzer logAnalyzer) {
+        this.dateRangeFactory = dateRangeFactory;
+        this.outputFilePreparer = outputFilePreparer;
+        this.logAnalyzer = logAnalyzer;
+    }
+
     public static void main(String[] args) {
         // Логирование входных параметров для проверки работоспособности black-box тестов
         debugArgs(Arrays.asList(args));
@@ -93,95 +104,22 @@ public class Application implements java.util.concurrent.Callable<Integer> {
 
     private void runApplication() throws IOException {
         OutputFormat outputFormat = OutputFormat.from(formatOption);
-        Path outputPath = validateAndPrepareOutputPath(outputFormat);
-        LocalDate fromDate = parseDate(fromOption, "--from");
-        LocalDate toDate = parseDate(toOption, "--to");
-        validateDateRange(fromDate, toDate);
+        Path outputPath = outputFilePreparer.prepare(outputPathOption, outputFormat);
+        DateRange dateRange = dateRangeFactory.create(fromOption, toOption);
 
-        DateRange dateRange = new DateRange(fromDate, toDate);
+        LogAnalysisRequest request =
+                new LogAnalysisRequest(inputPaths, outputFormat, outputPath, dateRange);
+
+        logAnalyzer.analyze(request);
+    }
+
+    private static LogAnalyzer createDefaultLogAnalyzer() {
         HttpClient httpClient = HttpClient.newBuilder().build();
         InputSourceResolver resolver = new InputSourceResolver(httpClient);
-        List<ResolvedLogSource> sources = resolver.resolve(inputPaths);
-
-        StatsCollector collector = new StatsCollector();
         LogProcessingService processingService = new LogProcessingService(new LogEntryParser());
-        List<String> processedFiles = new ArrayList<>();
-
-        for (ResolvedLogSource source : sources) {
-            try (BufferedReader reader = source.opener().open()) {
-                processingService.process(reader, source.displayName(), dateRange, collector);
-                processedFiles.add(source.displayName());
-            }
-        }
-
-        StatsResult statsResult = collector.buildResult(processedFiles);
-        StatsFormatter formatter = selectFormatter(outputFormat);
-        String content = formatter.format(statsResult);
-
-        Files.writeString(outputPath, content, StandardOpenOption.CREATE_NEW);
-        LOGGER.info("Statistics successfully written to {}", outputPath);
-    }
-
-    private Path validateAndPrepareOutputPath(OutputFormat format) throws IOException {
-        Path path = Paths.get(outputPathOption).toAbsolutePath().normalize();
-
-        if (Files.exists(path)) {
-            throw new InvalidArgumentsException("Output file already exists: " + path);
-        }
-
-        String extension = extractExtension(path.getFileName().toString());
-        if (!format.getFileExtension().equalsIgnoreCase("." + extension)) {
-            throw new InvalidArgumentsException(
-                    "Output file extension does not match format. Expected "
-                            + format.getFileExtension());
-        }
-
-        Path parent = path.getParent();
-        if (parent != null && !Files.exists(parent)) {
-            Files.createDirectories(parent);
-        }
-        if (parent != null && !Files.isWritable(parent)) {
-            throw new InvalidArgumentsException("Output directory is not writable: " + parent);
-        }
-
-        return path;
-    }
-
-    private static String extractExtension(String fileName) {
-        int lastDot = fileName.lastIndexOf('.');
-        if (lastDot < 0 || lastDot == fileName.length() - 1) {
-            return "";
-        }
-        return fileName.substring(lastDot + 1).toLowerCase(Locale.ROOT);
-    }
-
-    private static StatsFormatter selectFormatter(OutputFormat format) {
-        return switch (format) {
-            case JSON -> new JsonStatsFormatter();
-            case MARKDOWN -> new MarkdownStatsFormatter();
-        };
-    }
-
-    private static LocalDate parseDate(String value, String optionName) {
-        if (value == null) {
-            return null;
-        }
-        if (value.isBlank()) {
-            throw new InvalidArgumentsException(
-                    "Invalid value for " + optionName + ": value must not be blank");
-        }
-        try {
-            return LocalDate.parse(value);
-        } catch (DateTimeParseException ex) {
-            throw new InvalidArgumentsException(
-                    "Invalid value for " + optionName + ": " + value + ". Expected ISO-8601 date (yyyy-MM-dd)", ex);
-        }
-    }
-
-    private static void validateDateRange(LocalDate from, LocalDate to) {
-        if (from != null && to != null && from.isAfter(to)) {
-            throw new InvalidArgumentsException("--from must be before or equal to --to");
-        }
+        StatsFormatterFactory formatterFactory = new StatsFormatterFactory();
+        OutputFileWriter outputFileWriter = new OutputFileWriter();
+        return new LogAnalyzer(resolver, processingService, formatterFactory, outputFileWriter);
     }
 
     // Note: нужно только для отладки, удалить в случае ненадобности

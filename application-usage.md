@@ -9,7 +9,7 @@
 ```powershell
 mvn -q test                              # (опционально) убедиться, что все тесты зелёные
 mvn -q -DskipTests package               # собрать jar в target/
-mvn -q -DskipTests dependency:copy-dependencies -DincludeScope=runtime
+mvn -q -DskipTests dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib
 ```
 
 > После этого приложение можно запускать либо через `mvn exec:java`, либо напрямую через `java -cp` (см. примеры ниже).
@@ -39,14 +39,31 @@ mvn -q exec:java `
 
 ## Запуск напрямую через `java`
 
-```powershell
-java -cp "target\hw3-logs-1.0.jar;target\dependency\*" academy.Application `
-  --path scripts/data/input/logs/part1.txt `
-  --format markdown `
-  --output target/report.md
-```
+> Перед первым запуском убедитесь, что выполнили `dependency:copy-dependencies` (см. выше) — команда создаёт каталог `target/lib` с runtime-зависимостями.
 
-Файл `target/report.md` — человекочитаемый Markdown-отчёт с таблицами по ресурсам, кодам ответа и пр.
+- Markdown-отчёт:
+  ```powershell
+  java -cp "target\hw3-logs-1.0.jar;target\lib\*" academy.Application `
+    --path scripts/data/input/logs/part1.txt `
+    --format markdown `
+    --output target\report-markdown.md
+  ```
+- JSON-отчёт:
+  ```powershell
+  java -cp "target\hw3-logs-1.0.jar;target\lib\*" academy.Application `
+    --path scripts/data/input/logs/part1.txt scripts/data/input/logs/part2.txt `
+    --format json `
+    --output target\report.json
+  ```
+
+Каждая команда создаёт указанный файл (путь должен быть свободен). Если хотите перезаписать отчёт, удалите предыдущий файл (`Remove-Item target\report.json`) или задайте новое имя.
+
+> Альтернативный вариант — собрать «толстый» jar без отдельного каталога зависимостей:
+> ```powershell
+> mvn -q -DskipTests package spring-boot:repackage
+> java -jar target\hw3-logs-1.0.jar --path ... --format ... --output ...
+> ```
+> Плагин `spring-boot:repackage` упакует зависимости внутрь jar.
 
 ## Примеры входных путей
 
