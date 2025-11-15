@@ -19,8 +19,7 @@ public class LogProcessingService {
         this.parser = parser;
     }
 
-    public void process(
-            BufferedReader reader, String sourceName, DateRange dateRange, StatsCollector collector)
+    public void process(BufferedReader reader, String sourceName, DateRange dateRange, StatsCollector collector)
             throws IOException {
         String line;
         long lineCounter = 0L;
@@ -31,7 +30,7 @@ public class LogProcessingService {
                 LOGGER.warn("Skipped malformed log line {} from {}", lineCounter, sourceName);
                 continue;
             }
-            LogEntry logEntry = entry.get();
+            LogEntry logEntry = entry.orElseThrow();
             if (!dateRange.includes(logEntry.timestamp())) {
                 continue;
             }
@@ -39,4 +38,3 @@ public class LogProcessingService {
         }
     }
 }
-

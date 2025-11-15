@@ -10,4 +10,3 @@ public class InvalidArgumentsException extends RuntimeException {
         super(message, cause);
     }
 }
-

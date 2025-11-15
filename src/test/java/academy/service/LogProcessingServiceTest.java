@@ -1,5 +1,8 @@
 package academy.service;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import academy.log.LogEntryParser;
 import academy.stats.StatsCollector;
 import academy.stats.StatsResult;
@@ -9,9 +12,6 @@ import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LogProcessingServiceTest {
 
@@ -38,8 +38,8 @@ class LogProcessingServiceTest {
                 () -> assertEquals(List.of("source.log"), result.files()),
                 () -> assertEquals(
                         List.of("/downloads/product_1"),
-                        result.resources().stream().map(resource -> resource.resource()).toList()));
+                        result.resources().stream()
+                                .map(resource -> resource.resource())
+                                .toList()));
     }
 }
-
-

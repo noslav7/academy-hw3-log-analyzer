@@ -11,4 +11,3 @@ public record LogEntry(
         String protocol,
         int statusCode,
         long responseSize) {}
-

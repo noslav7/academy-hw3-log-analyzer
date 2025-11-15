@@ -10,4 +10,3 @@ public record ResolvedLogSource(String displayName, SourceOpener opener) {
         BufferedReader open() throws IOException;
     }
 }
-

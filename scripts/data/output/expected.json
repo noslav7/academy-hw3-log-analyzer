@@ -47,6 +47,7 @@
       "totalRequestsPercentage": 99.61
     }
   ],
+  "uniqueProtocolsCount": 4,
   "uniqueProtocols": [
     "HTTP/1.1",
     "HTTP/1.0",

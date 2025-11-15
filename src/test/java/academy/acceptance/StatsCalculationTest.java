@@ -35,8 +35,8 @@ public class StatsCalculationTest {
         assertThat(exitCode).isEqualTo(0);
 
         JsonNode actual = OBJECT_MAPPER.readTree(output.toFile());
-        JsonNode expected =
-                OBJECT_MAPPER.readTree(Path.of("scripts", "data", "output", "expected.json").toFile());
+        JsonNode expected = OBJECT_MAPPER.readTree(
+                Path.of("scripts", "data", "output", "expected.json").toFile());
 
         assertThat(actual.get("files")).isEqualTo(expected.get("files"));
         assertThat(actual.get("totalRequestsCount")).isEqualTo(expected.get("totalRequestsCount"));
@@ -44,6 +44,7 @@ public class StatsCalculationTest {
         assertThat(actual.get("resources")).isEqualTo(expected.get("resources"));
         assertThat(actual.get("responseCodes")).isEqualTo(expected.get("responseCodes"));
         assertThat(actual.get("requestsPerDate")).isEqualTo(expected.get("requestsPerDate"));
+        assertThat(actual.get("uniqueProtocolsCount")).isEqualTo(expected.get("uniqueProtocolsCount"));
         assertThat(actual.get("uniqueProtocols")).isEqualTo(expected.get("uniqueProtocols"));
     }
 }

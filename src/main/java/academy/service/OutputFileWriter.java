@@ -11,5 +11,3 @@ public class OutputFileWriter {
         Files.writeString(path, content, StandardOpenOption.CREATE_NEW);
     }
 }
-
-

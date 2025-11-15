@@ -14,12 +14,12 @@ import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
 
 public class ArgumentValidationTest {
@@ -47,12 +47,10 @@ public class ArgumentValidationTest {
         Path tempDir = freshTempDir();
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        server.createContext(
-                "/logs/missing.log",
-                exchange -> {
-                    exchange.sendResponseHeaders(404, -1);
-                    exchange.close();
-                });
+        server.createContext("/logs/missing.log", exchange -> {
+            exchange.sendResponseHeaders(404, -1);
+            exchange.close();
+        });
         server.setExecutor(executor);
         server.start();
 
@@ -97,8 +95,8 @@ public class ArgumentValidationTest {
         Path output = tempDir.resolve("result.json");
 
         CommandLine commandLine = TestUtils.newCommandLine();
-        List<String> args = new java.util.ArrayList<>(List.of(
-                "--path", log.toString(), "--format", "json", "--output", output.toString()));
+        List<String> args = new java.util.ArrayList<>(
+                List.of("--path", log.toString(), "--format", "json", "--output", output.toString()));
 
         if (from == null) {
             args.add("--from");
@@ -198,14 +196,7 @@ public class ArgumentValidationTest {
 
         int exitCode = TestUtils.newCommandLine()
                 .execute(
-                        "--path",
-                        log.toString(),
-                        "--format",
-                        "json",
-                        "--output",
-                        output.toString(),
-                        argument,
-                        "value");
+                        "--path", log.toString(), "--format", "json", "--output", output.toString(), argument, "value");
 
         assertThat(exitCode).isEqualTo(2);
         assertThat(Files.exists(output)).isFalse();

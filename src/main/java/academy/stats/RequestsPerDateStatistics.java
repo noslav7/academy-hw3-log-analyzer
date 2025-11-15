@@ -26,16 +26,12 @@ public class RequestsPerDateStatistics {
                 .collect(Collectors.toList());
     }
 
-    private static RequestPerDateStat toStat(
-            Map.Entry<LocalDate, LongAdder> entry, long totalRequestsCount) {
+    private static RequestPerDateStat toStat(Map.Entry<LocalDate, LongAdder> entry, long totalRequestsCount) {
         long count = entry.getValue().sum();
         BigDecimal percentage = totalRequestsCount == 0
                 ? BigDecimal.ZERO
-                : BigDecimal.valueOf(count * 100.0d / totalRequestsCount)
-                        .setScale(2, RoundingMode.HALF_UP);
+                : BigDecimal.valueOf(count * 100.0d / totalRequestsCount).setScale(2, RoundingMode.HALF_UP);
         String weekday = entry.getKey().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
         return new RequestPerDateStat(entry.getKey(), weekday, count, percentage);
     }
 }
-
-

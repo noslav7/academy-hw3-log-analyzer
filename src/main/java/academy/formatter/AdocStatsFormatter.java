@@ -25,9 +25,7 @@ public class AdocStatsFormatter implements StatsFormatter {
         builder.append("[cols=\"1,1\",options=\"header\"]").append(newline);
         builder.append("|===").append(newline);
         builder.append("| Метрика | Значение").append(newline);
-        builder.append("| Файл(-ы) | ")
-                .append(formatFiles(statsResult.files()))
-                .append(newline);
+        builder.append("| Файл(-ы) | ").append(formatFiles(statsResult.files())).append(newline);
         builder.append("| Начальная дата | ")
                 .append(formatDate(statsResult.firstRequestDate()))
                 .append(newline);
@@ -36,6 +34,9 @@ public class AdocStatsFormatter implements StatsFormatter {
                 .append(newline);
         builder.append("| Количество запросов | ")
                 .append(formatInteger(statsResult.totalRequestsCount()))
+                .append(newline);
+        builder.append("| Количество уникальных протоколов | ")
+                .append(formatInteger(statsResult.uniqueProtocolsCount()))
                 .append(newline);
 
         ResponseSizeStats responseSizeStats = statsResult.responseSizeInBytes();
@@ -112,9 +113,7 @@ public class AdocStatsFormatter implements StatsFormatter {
             builder.append("* +-+").append(newline);
         } else {
             for (String protocol : statsResult.uniqueProtocols()) {
-                builder.append("* ")
-                        .append(formatProtocol(protocol))
-                        .append(newline);
+                builder.append("* ").append(formatProtocol(protocol)).append(newline);
             }
         }
 
@@ -125,9 +124,7 @@ public class AdocStatsFormatter implements StatsFormatter {
         if (files.isEmpty()) {
             return "+-+";
         }
-        return files.stream()
-                .map(AdocStatsFormatter::formatProtocol)
-                .collect(Collectors.joining(", "));
+        return files.stream().map(AdocStatsFormatter::formatProtocol).collect(Collectors.joining(", "));
     }
 
     private static String formatResource(String resource) {
@@ -138,5 +135,3 @@ public class AdocStatsFormatter implements StatsFormatter {
         return "+" + value + "+";
     }
 }
-
-

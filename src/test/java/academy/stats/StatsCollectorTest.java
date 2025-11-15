@@ -1,16 +1,16 @@
 package academy.stats;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import academy.log.LogEntry;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StatsCollectorTest {
 
@@ -50,9 +50,12 @@ class StatsCollectorTest {
         assertAll(
                 () -> assertEquals(List.of("part1.log", "part2.log"), result.files()),
                 () -> assertEquals(3L, result.totalRequestsCount()),
-                () -> assertEquals(new BigDecimal("200.00"), result.responseSizeInBytes().average()),
-                () -> assertEquals(new BigDecimal("300.00"), result.responseSizeInBytes().max()),
-                () -> assertEquals(new BigDecimal("290.00"), result.responseSizeInBytes().p95()),
+                () -> assertEquals(
+                        new BigDecimal("200.00"), result.responseSizeInBytes().average()),
+                () -> assertEquals(
+                        new BigDecimal("300.00"), result.responseSizeInBytes().max()),
+                () -> assertEquals(
+                        new BigDecimal("290.00"), result.responseSizeInBytes().p95()),
                 () -> assertEquals(
                         List.of(
                                 new ResourceStat("/downloads/product_1", 2L),
@@ -66,12 +69,12 @@ class StatsCollectorTest {
                         result.responseCodes()),
                 () -> assertEquals(
                         List.of(
-                                new RequestPerDateStat(
-                                        LocalDate.of(2024, 1, 1), "Monday", 2L, new BigDecimal("66.67")),
+                                new RequestPerDateStat(LocalDate.of(2024, 1, 1), "Monday", 2L, new BigDecimal("66.67")),
                                 new RequestPerDateStat(
                                         LocalDate.of(2024, 1, 2), "Tuesday", 1L, new BigDecimal("33.33"))),
                         result.requestsPerDate()),
                 () -> assertEquals(List.of("HTTP/1.1", "grpc"), result.uniqueProtocols()),
+                () -> assertEquals(2L, result.uniqueProtocolsCount()),
                 () -> assertEquals(LocalDate.of(2024, 1, 1), result.firstRequestDate()),
                 () -> assertEquals(LocalDate.of(2024, 1, 2), result.lastRequestDate()));
     }
@@ -85,16 +88,18 @@ class StatsCollectorTest {
         assertAll(
                 () -> assertTrue(result.files().isEmpty()),
                 () -> assertEquals(0L, result.totalRequestsCount()),
-                () -> assertEquals(new BigDecimal("0.00"), result.responseSizeInBytes().average()),
-                () -> assertEquals(new BigDecimal("0.00"), result.responseSizeInBytes().max()),
-                () -> assertEquals(new BigDecimal("0.00"), result.responseSizeInBytes().p95()),
+                () -> assertEquals(
+                        new BigDecimal("0.00"), result.responseSizeInBytes().average()),
+                () -> assertEquals(
+                        new BigDecimal("0.00"), result.responseSizeInBytes().max()),
+                () -> assertEquals(
+                        new BigDecimal("0.00"), result.responseSizeInBytes().p95()),
                 () -> assertTrue(result.resources().isEmpty()),
                 () -> assertTrue(result.responseCodes().isEmpty()),
                 () -> assertTrue(result.requestsPerDate().isEmpty()),
                 () -> assertTrue(result.uniqueProtocols().isEmpty()),
+                () -> assertEquals(0L, result.uniqueProtocolsCount()),
                 () -> assertNull(result.firstRequestDate()),
                 () -> assertNull(result.lastRequestDate()));
     }
 }
-
-

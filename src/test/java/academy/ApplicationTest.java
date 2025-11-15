@@ -35,7 +35,6 @@ public class ApplicationTest {
                 () -> assertEquals(0, exitCode, "exit code"),
                 () -> assertTrue(Files.exists(output), "output file exists"),
                 () -> assertTrue(
-                        Files.readString(output).contains("#### Общая информация"),
-                        "report contains expected header"));
+                        Files.readString(output).contains("#### Общая информация"), "report contains expected header"));
     }
 }

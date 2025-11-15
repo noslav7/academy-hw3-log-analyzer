@@ -1,9 +1,9 @@
 package academy.formatter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import academy.format.OutputFormat;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StatsFormatterFactoryTest {
 
@@ -30,5 +30,3 @@ class StatsFormatterFactoryTest {
         assertEquals(AdocStatsFormatter.class, formatter.getClass());
     }
 }
-
-

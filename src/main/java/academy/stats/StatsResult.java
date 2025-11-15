@@ -11,6 +11,6 @@ public record StatsResult(
         List<ResponseCodeStat> responseCodes,
         List<RequestPerDateStat> requestsPerDate,
         List<String> uniqueProtocols,
+        long uniqueProtocolsCount,
         LocalDate firstRequestDate,
         LocalDate lastRequestDate) {}
-

@@ -1,13 +1,13 @@
 package academy.service;
 
-import academy.exception.InvalidArgumentsException;
-import java.time.LocalDate;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import academy.exception.InvalidArgumentsException;
+import java.time.LocalDate;
+import org.junit.jupiter.api.Test;
 
 class DateRangeFactoryTest {
 
@@ -26,9 +26,7 @@ class DateRangeFactoryTest {
     void GivenNullValues_WhenCreate_ThenAllowsOpenInterval() {
         DateRange range = factory.create(null, null);
 
-        assertAll(
-                () -> assertNull(range.from()),
-                () -> assertNull(range.to()));
+        assertAll(() -> assertNull(range.from()), () -> assertNull(range.to()));
     }
 
     @Test
@@ -46,5 +44,3 @@ class DateRangeFactoryTest {
         assertThrows(InvalidArgumentsException.class, () -> factory.create("2025-02-01", "2025-01-31"));
     }
 }
-
-

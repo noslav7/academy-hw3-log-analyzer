@@ -1,5 +1,9 @@
 package academy.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import academy.exception.InvalidArgumentsException;
 import academy.format.OutputFormat;
 import java.io.IOException;
@@ -7,10 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OutputFilePreparerTest {
 
@@ -34,19 +34,13 @@ class OutputFilePreparerTest {
         Path target = tempDir.resolve("existing.json");
         Files.createFile(target);
 
-        assertThrows(
-                InvalidArgumentsException.class,
-                () -> preparer.prepare(target.toString(), OutputFormat.JSON));
+        assertThrows(InvalidArgumentsException.class, () -> preparer.prepare(target.toString(), OutputFormat.JSON));
     }
 
     @Test
     void GivenMismatchedExtension_WhenPrepare_ThenThrowsInvalidArgumentsException() {
         Path target = tempDir.resolve("report.md");
 
-        assertThrows(
-                InvalidArgumentsException.class,
-                () -> preparer.prepare(target.toString(), OutputFormat.JSON));
+        assertThrows(InvalidArgumentsException.class, () -> preparer.prepare(target.toString(), OutputFormat.JSON));
     }
 }
-
-

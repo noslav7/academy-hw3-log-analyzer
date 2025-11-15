@@ -18,19 +18,13 @@ public class DateRangeFactory {
             return null;
         }
         if (value.isBlank()) {
-            throw new InvalidArgumentsException(
-                    "Invalid value for " + optionName + ": value must not be blank");
+            throw new InvalidArgumentsException("Invalid value for " + optionName + ": value must not be blank");
         }
         try {
             return LocalDate.parse(value);
         } catch (DateTimeParseException ex) {
             throw new InvalidArgumentsException(
-                    "Invalid value for "
-                            + optionName
-                            + ": "
-                            + value
-                            + ". Expected ISO-8601 date (yyyy-MM-dd)",
-                    ex);
+                    "Invalid value for " + optionName + ": " + value + ". Expected ISO-8601 date (yyyy-MM-dd)", ex);
         }
     }
 
@@ -40,5 +34,3 @@ public class DateRangeFactory {
         }
     }
 }
-
-

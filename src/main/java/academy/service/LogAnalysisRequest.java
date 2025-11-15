@@ -16,5 +16,3 @@ public record LogAnalysisRequest(
         inputPaths = List.copyOf(inputPaths);
     }
 }
-
-

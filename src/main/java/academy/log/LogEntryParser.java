@@ -15,9 +15,12 @@ public class LogEntryParser {
 
     private static final Logger LOGGER = LogManager.getLogger(LogEntryParser.class);
 
-    private static final Pattern LOG_PATTERN =
-            Pattern.compile(
-                    "^(?<ip>\\S+)\\s+(?<ident>\\S+)\\s+(?<user>\\S+)\\s+\\[(?<time>[^\\]]+)]\\s+\"(?<request>[^\"]*)\"\\s+(?<status>\\d{3})\\s+(?<size>\\d+)(?:\\s+\"(?<referer>[^\"]*)\"\\s+\"(?<agent>[^\"]*)\")?$");
+    private static final int MAX_TOKEN_LENGTH = 256;
+    private static final int MAX_TIME_LENGTH = 64;
+    private static final int MAX_REQUEST_LENGTH = 4096;
+    private static final int MAX_HEADER_LENGTH = 4096;
+
+    private static final Pattern LOG_PATTERN = Pattern.compile(buildLogPattern());
     private static final DateTimeFormatter LOG_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/MMM/yyyy:HH:mm:ss Z", Locale.US);
 
@@ -42,16 +45,15 @@ public class LogEntryParser {
         int statusCode = Integer.parseInt(matcher.group("status"));
         long responseSize = Long.parseLong(matcher.group("size"));
 
-        return Optional.of(
-                new LogEntry(
-                        matcher.group("ip"),
-                        normalizeValue(matcher.group("user")),
-                        timestamp,
-                        requestParts.method(),
-                        requestParts.resource(),
-                        requestParts.protocol(),
-                        statusCode,
-                        responseSize));
+        return Optional.of(new LogEntry(
+                matcher.group("ip"),
+                normalizeValue(matcher.group("user")),
+                timestamp,
+                requestParts.method(),
+                requestParts.resource(),
+                requestParts.protocol(),
+                statusCode,
+                responseSize));
     }
 
     private static String normalizeValue(String value) {
@@ -81,5 +83,19 @@ public class LogEntryParser {
     }
 
     private record RequestParts(String method, String resource, String protocol) {}
-}
 
+    private static String buildLogPattern() {
+        return String.format(
+                "^"
+                        + "(?<ip>\\S{1,%1$d})\\s+"
+                        + "(?<ident>\\S{1,%1$d})\\s+"
+                        + "(?<user>\\S{1,%1$d})\\s+"
+                        + "\\[(?<time>[^\\]]{1,%2$d})]\\s+"
+                        + "\"(?<request>[^\"]{0,%3$d})\"\\s+"
+                        + "(?<status>\\d{3})\\s+"
+                        + "(?<size>\\d+)"
+                        + "(?:\\s+\"(?<referer>[^\"]{0,%4$d})\"\\s+\"(?<agent>[^\"]{0,%4$d})\")?"
+                        + "$",
+                MAX_TOKEN_LENGTH, MAX_TIME_LENGTH, MAX_REQUEST_LENGTH, MAX_HEADER_LENGTH);
+    }
+}

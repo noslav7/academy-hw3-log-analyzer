@@ -41,8 +41,7 @@ public class LogAnalyzer {
 
         for (ResolvedLogSource source : sources) {
             try (BufferedReader reader = source.opener().open()) {
-                logProcessingService.process(
-                        reader, source.displayName(), request.dateRange(), collector);
+                logProcessingService.process(reader, source.displayName(), request.dateRange(), collector);
                 processedFiles.add(source.displayName());
             }
         }
@@ -55,5 +54,3 @@ public class LogAnalyzer {
         LOGGER.info("Statistics successfully written to {}", request.outputPath());
     }
 }
-
-

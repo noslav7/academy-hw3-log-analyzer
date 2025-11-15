@@ -6,4 +6,3 @@ public interface StatsFormatter {
 
     String format(StatsResult statsResult);
 }
-

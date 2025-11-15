@@ -1,5 +1,7 @@
 package academy.formatter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import academy.stats.RequestPerDateStat;
 import academy.stats.ResourceStat;
 import academy.stats.ResponseCodeStat;
@@ -10,8 +12,6 @@ import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 class JsonStatsFormatterTest {
 
     private final JsonStatsFormatter formatter = new JsonStatsFormatter();
@@ -21,24 +21,19 @@ class JsonStatsFormatterTest {
         StatsResult statsResult = new StatsResult(
                 List.of("part1.txt", "part2.txt"),
                 3L,
-                new ResponseSizeStats(
-                        new BigDecimal("123.45"), new BigDecimal("678.90"), new BigDecimal("234.56")),
+                new ResponseSizeStats(new BigDecimal("123.45"), new BigDecimal("678.90"), new BigDecimal("234.56")),
+                List.of(new ResourceStat("/downloads/product_1", 2L), new ResourceStat("/downloads/product_2", 1L)),
+                List.of(new ResponseCodeStat(200, 2L), new ResponseCodeStat(404, 1L)),
                 List.of(
-                        new ResourceStat("/downloads/product_1", 2L),
-                        new ResourceStat("/downloads/product_2", 1L)),
-                List.of(
-                        new ResponseCodeStat(200, 2L),
-                        new ResponseCodeStat(404, 1L)),
-                List.of(
-                        new RequestPerDateStat(
-                                LocalDate.of(2024, 1, 1), "Monday", 2L, new BigDecimal("66.67")),
-                        new RequestPerDateStat(
-                                LocalDate.of(2024, 1, 2), "Tuesday", 1L, new BigDecimal("33.33"))),
+                        new RequestPerDateStat(LocalDate.of(2024, 1, 1), "Monday", 2L, new BigDecimal("66.67")),
+                        new RequestPerDateStat(LocalDate.of(2024, 1, 2), "Tuesday", 1L, new BigDecimal("33.33"))),
                 List.of("HTTP/1.1", "grpc"),
+                2L,
                 LocalDate.of(2024, 1, 1),
                 LocalDate.of(2024, 1, 2));
 
-        String expected = """
+        String expected =
+                """
                 {
                   "files" : [ "part1.txt", "part2.txt" ],
                   "totalRequestsCount" : 3,
@@ -72,18 +67,15 @@ class JsonStatsFormatterTest {
                     "totalRequestsCount" : 1,
                     "totalRequestsPercentage" : 33.33
                   } ],
+                  "uniqueProtocolsCount" : 2,
                   "uniqueProtocols" : [ "HTTP/1.1", "grpc" ]
                 }
                 """;
 
-        assertEquals(
-                normalizeMultiline(expected),
-                normalizeMultiline(formatter.format(statsResult)));
+        assertEquals(normalizeMultiline(expected), normalizeMultiline(formatter.format(statsResult)));
     }
 
     private static String normalizeMultiline(String value) {
         return value.strip().replace("\r\n", "\n");
     }
 }
-
-

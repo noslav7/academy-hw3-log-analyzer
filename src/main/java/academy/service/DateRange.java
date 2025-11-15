@@ -16,4 +16,3 @@ public record DateRange(LocalDate from, LocalDate to) {
         return true;
     }
 }
-

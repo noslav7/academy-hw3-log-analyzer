@@ -15,7 +15,6 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -71,20 +70,18 @@ public class InputSourceResolver {
     }
 
     private List<ResolvedLogSource> resolveLocal(String input) {
-        Path path = Paths.get(input);
+        Path path = Path.of(input);
         if (!containsGlob(input)) {
             return List.of(resolveConcreteLocal(path));
         }
 
         Path baseDir = determineBaseDirectory(path);
         if (!Files.exists(baseDir)) {
-            throw new InvalidArgumentsException(
-                    "Base directory for glob does not exist: " + baseDir);
+            throw new InvalidArgumentsException("Base directory for glob does not exist: " + baseDir);
         }
         Path resolvedPattern = resolveAgainstBase(path, baseDir);
         Path relativePattern = baseDir.relativize(resolvedPattern);
-        PathMatcher matcher =
-                FileSystems.getDefault().getPathMatcher("glob:" + relativePattern.toString());
+        PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + relativePattern.toString());
         int maxDepth = containsRecursiveWildcard(relativePattern)
                 ? Integer.MAX_VALUE
                 : Math.max(1, relativePattern.getNameCount());
@@ -105,8 +102,7 @@ public class InputSourceResolver {
             for (Path matchedPath : matched) {
                 validateLocalExtension(matchedPath);
                 sources.add(new ResolvedLogSource(
-                        matchedPath.getFileName().toString(),
-                        () -> Files.newBufferedReader(matchedPath, StandardCharsets.UTF_8)));
+                        fileName(matchedPath), () -> Files.newBufferedReader(matchedPath, StandardCharsets.UTF_8)));
             }
             return sources;
         } catch (IOException ex) {
@@ -124,8 +120,7 @@ public class InputSourceResolver {
         validateLocalExtension(path);
         Path normalized = path.toAbsolutePath().normalize();
         return new ResolvedLogSource(
-                normalized.getFileName().toString(),
-                () -> Files.newBufferedReader(normalized, StandardCharsets.UTF_8));
+                fileName(normalized), () -> Files.newBufferedReader(normalized, StandardCharsets.UTF_8));
     }
 
     private BufferedReader openRemote(URI uri) throws IOException {
@@ -148,7 +143,7 @@ public class InputSourceResolver {
     }
 
     private void validateLocalExtension(Path path) {
-        String extension = extractExtension(path.getFileName().toString());
+        String extension = extractExtension(fileName(path));
         if (!SUPPORTED_EXTENSIONS.contains(extension)) {
             throw new InvalidArgumentsException(
                     "Unsupported file format for path: " + path + ". Supported: " + SUPPORTED_EXTENSIONS);
@@ -179,10 +174,7 @@ public class InputSourceResolver {
     }
 
     private static boolean containsGlob(String input) {
-        return input.contains("*")
-                || input.contains("?")
-                || input.contains("[")
-                || input.contains("{");
+        return input.contains("*") || input.contains("?") || input.contains("[") || input.contains("{");
     }
 
     private static boolean isRemote(String input) {
@@ -201,7 +193,7 @@ public class InputSourceResolver {
             if (root != null) {
                 base = root;
             } else {
-                base = Paths.get(".");
+                base = Path.of(".");
             }
         }
 
@@ -223,5 +215,12 @@ public class InputSourceResolver {
         }
         return baseDir.resolve(pattern).normalize();
     }
-}
 
+    private static String fileName(Path path) {
+        Path fileName = path.getFileName();
+        if (fileName == null) {
+            throw new InvalidArgumentsException("Path does not contain a file name: " + path);
+        }
+        return fileName.toString();
+    }
+}

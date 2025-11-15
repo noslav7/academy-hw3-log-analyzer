@@ -57,6 +57,8 @@ public class JsonStatsFormatter implements StatsFormatter {
             perDateNode.set("totalRequestsPercentage", new DecimalNode(perDateStat.totalRequestsPercentage()));
         }
 
+        root.put("uniqueProtocolsCount", statsResult.uniqueProtocolsCount());
+
         ArrayNode protocolsNode = root.putArray("uniqueProtocols");
         statsResult.uniqueProtocols().forEach(protocolsNode::add);
 
@@ -67,4 +69,3 @@ public class JsonStatsFormatter implements StatsFormatter {
         }
     }
 }
-

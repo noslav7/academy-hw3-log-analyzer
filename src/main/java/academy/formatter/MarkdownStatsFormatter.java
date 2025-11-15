@@ -38,6 +38,10 @@ public class MarkdownStatsFormatter implements StatsFormatter {
                 .append(formatInteger(statsResult.totalRequestsCount()))
                 .append(" |")
                 .append(System.lineSeparator());
+        builder.append("| Кол-во уникальных протоколов | ")
+                .append(formatInteger(statsResult.uniqueProtocolsCount()))
+                .append(" |")
+                .append(System.lineSeparator());
 
         ResponseSizeStats responseSizeStats = statsResult.responseSizeInBytes();
         builder.append("| Средний размер ответа | ")
@@ -92,11 +96,11 @@ public class MarkdownStatsFormatter implements StatsFormatter {
         }
         builder.append(System.lineSeparator());
 
-        builder.append("#### Запросы по датам")
-                .append(System.lineSeparator())
+        builder.append("#### Запросы по датам").append(System.lineSeparator()).append(System.lineSeparator());
+        builder.append("|    Дата    |    День недели    | Количество |  Доля,% |")
                 .append(System.lineSeparator());
-        builder.append("|    Дата    |    День недели    | Количество |  Доля,% |").append(System.lineSeparator());
-        builder.append("|:----------:|:-----------------:|-----------:|--------:|").append(System.lineSeparator());
+        builder.append("|:----------:|:-----------------:|-----------:|--------:|")
+                .append(System.lineSeparator());
         if (statsResult.requestsPerDate().isEmpty()) {
             builder.append("|     -      |         -         |          0 |   0.00 |")
                     .append(System.lineSeparator());
@@ -116,7 +120,9 @@ public class MarkdownStatsFormatter implements StatsFormatter {
         }
         builder.append(System.lineSeparator());
 
-        builder.append("#### Используемые протоколы").append(System.lineSeparator()).append(System.lineSeparator());
+        builder.append("#### Используемые протоколы")
+                .append(System.lineSeparator())
+                .append(System.lineSeparator());
         if (statsResult.uniqueProtocols().isEmpty()) {
             builder.append("- `-`").append(System.lineSeparator());
         } else {
@@ -132,9 +138,6 @@ public class MarkdownStatsFormatter implements StatsFormatter {
         if (statsResult.files().isEmpty()) {
             return "`-`";
         }
-        return statsResult.files().stream()
-                .map(file -> "`" + file + "`")
-                .collect(Collectors.joining(", "));
+        return statsResult.files().stream().map(file -> "`" + file + "`").collect(Collectors.joining(", "));
     }
 }
-

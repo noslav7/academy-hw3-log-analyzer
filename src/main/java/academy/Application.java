@@ -39,7 +39,11 @@ public class Application implements java.util.concurrent.Callable<Integer> {
 
     private static final Logger LOGGER = LogManager.getLogger(Application.class);
 
-    @Option(names = {"-p", "--path"}, required = true, arity = "1..*", description = "One or many log file paths")
+    @Option(
+            names = {"-p", "--path"},
+            required = true,
+            arity = "1..*",
+            description = "One or many log file paths")
     private List<String> inputPaths = new ArrayList<>();
 
     @Option(
@@ -70,10 +74,7 @@ public class Application implements java.util.concurrent.Callable<Integer> {
         this(new DateRangeFactory(), new OutputFilePreparer(), createDefaultLogAnalyzer());
     }
 
-    Application(
-            DateRangeFactory dateRangeFactory,
-            OutputFilePreparer outputFilePreparer,
-            LogAnalyzer logAnalyzer) {
+    Application(DateRangeFactory dateRangeFactory, OutputFilePreparer outputFilePreparer, LogAnalyzer logAnalyzer) {
         this.dateRangeFactory = dateRangeFactory;
         this.outputFilePreparer = outputFilePreparer;
         this.logAnalyzer = logAnalyzer;
@@ -107,8 +108,7 @@ public class Application implements java.util.concurrent.Callable<Integer> {
         Path outputPath = outputFilePreparer.prepare(outputPathOption, outputFormat);
         DateRange dateRange = dateRangeFactory.create(fromOption, toOption);
 
-        LogAnalysisRequest request =
-                new LogAnalysisRequest(inputPaths, outputFormat, outputPath, dateRange);
+        LogAnalysisRequest request = new LogAnalysisRequest(inputPaths, outputFormat, outputPath, dateRange);
 
         logAnalyzer.analyze(request);
     }

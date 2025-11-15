@@ -5,13 +5,12 @@ import academy.format.OutputFormat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Locale;
 
 public class OutputFilePreparer {
 
     public Path prepare(String outputPathOption, OutputFormat format) throws IOException {
-        Path outputPath = Paths.get(outputPathOption).toAbsolutePath().normalize();
+        Path outputPath = Path.of(outputPathOption).toAbsolutePath().normalize();
 
         ensureFileDoesNotExist(outputPath);
         ensureExtensionMatchesFormat(outputPath, format);
@@ -27,7 +26,7 @@ public class OutputFilePreparer {
     }
 
     private static void ensureExtensionMatchesFormat(Path outputPath, OutputFormat format) {
-        String fileName = outputPath.getFileName().toString();
+        String fileName = fileName(outputPath);
         String extension = extractExtension(fileName);
         String expectedExtension = format.getFileExtension().substring(1);
         if (!expectedExtension.equalsIgnoreCase(extension)) {
@@ -56,6 +55,12 @@ public class OutputFilePreparer {
         }
         return fileName.substring(lastDot + 1).toLowerCase(Locale.ROOT);
     }
+
+    private static String fileName(Path path) {
+        Path fileName = path.getFileName();
+        if (fileName == null) {
+            throw new InvalidArgumentsException("Output path does not contain a file name: " + path);
+        }
+        return fileName.toString();
+    }
 }
-
-

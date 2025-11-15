@@ -1,14 +1,14 @@
 package academy.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class OutputFileWriterTest {
 
@@ -34,5 +34,3 @@ class OutputFileWriterTest {
         assertThrows(FileAlreadyExistsException.class, () -> writer.write(target, "new content"));
     }
 }
-
-

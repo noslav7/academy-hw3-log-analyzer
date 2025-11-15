@@ -24,7 +24,7 @@ public enum OutputFormat {
     }
 
     public static OutputFormat from(String value) {
-        for (OutputFormat format : OutputFormat.values()) {
+        for (OutputFormat format : values()) {
             if (format.cliName.equalsIgnoreCase(value)) {
                 return format;
             }
@@ -32,4 +32,3 @@ public enum OutputFormat {
         throw new InvalidArgumentsException("Unsupported format: " + value);
     }
 }
-

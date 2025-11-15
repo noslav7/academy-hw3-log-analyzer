@@ -6,7 +6,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +18,7 @@ public class StatsCollector {
     private final Map<String, LongAdder> resourceCounters = new ConcurrentHashMap<>();
     private final Map<Integer, LongAdder> responseCodeCounters = new ConcurrentHashMap<>();
     private final RequestsPerDateStatistics requestsPerDateStatistics = new RequestsPerDateStatistics();
-    private final LinkedHashMap<String, LongAdder> protocolCounters = new LinkedHashMap<>();
+    private final ProtocolStatistics protocolStatistics = new ProtocolStatistics();
 
     private long totalRequestsCount;
     private long responseSizeSum;
@@ -34,17 +33,19 @@ public class StatsCollector {
         responseSizes.add(entry.responseSize());
 
         if (!entry.resource().isBlank()) {
-            resourceCounters.computeIfAbsent(entry.resource(), key -> new LongAdder()).increment();
+            resourceCounters
+                    .computeIfAbsent(entry.resource(), key -> new LongAdder())
+                    .increment();
         }
 
-        responseCodeCounters.computeIfAbsent(entry.statusCode(), key -> new LongAdder()).increment();
+        responseCodeCounters
+                .computeIfAbsent(entry.statusCode(), key -> new LongAdder())
+                .increment();
 
         LocalDate date = entry.timestamp().toLocalDate();
         requestsPerDateStatistics.register(date);
 
-        if (!entry.protocol().isBlank()) {
-            protocolCounters.computeIfAbsent(entry.protocol(), key -> new LongAdder()).increment();
-        }
+        protocolStatistics.register(entry.protocol());
 
         if (firstRequestDate == null || date.isBefore(firstRequestDate)) {
             firstRequestDate = date;
@@ -62,13 +63,15 @@ public class StatsCollector {
 
         List<ResourceStat> topResources = resourceCounters.entrySet().stream()
                 .map(entry -> new ResourceStat(entry.getKey(), entry.getValue().sum()))
-                .sorted(Comparator.comparingLong(ResourceStat::totalRequestsCount).reversed()
+                .sorted(Comparator.comparingLong(ResourceStat::totalRequestsCount)
+                        .reversed()
                         .thenComparing(ResourceStat::resource))
                 .limit(10)
                 .collect(Collectors.toList());
 
         List<ResponseCodeStat> responseCodeStats = responseCodeCounters.entrySet().stream()
-                .map(entry -> new ResponseCodeStat(entry.getKey(), entry.getValue().sum()))
+                .map(entry ->
+                        new ResponseCodeStat(entry.getKey(), entry.getValue().sum()))
                 .sorted(Comparator.<ResponseCodeStat>comparingLong(ResponseCodeStat::totalResponsesCount)
                         .reversed()
                         .thenComparingInt(ResponseCodeStat::code))
@@ -76,16 +79,7 @@ public class StatsCollector {
 
         List<RequestPerDateStat> perDateStats = requestsPerDateStatistics.build(totalRequestsCount);
 
-        Comparator<Map.Entry<String, LongAdder>> protocolComparator =
-                Comparator.<Map.Entry<String, LongAdder>, Boolean>comparing(
-                                entry -> !entry.getKey().startsWith("HTTP/"))
-                        .thenComparing((Map.Entry<String, LongAdder> entry) -> entry.getValue().sum(), Comparator.reverseOrder())
-                        .thenComparing(Map.Entry::getKey);
-
-        List<String> protocols = protocolCounters.entrySet().stream()
-                .sorted(protocolComparator)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+        ProtocolStats protocolStats = protocolStatistics.build();
 
         return new StatsResult(
                 List.copyOf(files),
@@ -94,7 +88,8 @@ public class StatsCollector {
                 topResources,
                 responseCodeStats,
                 perDateStats,
-                protocols,
+                protocolStats.uniqueProtocols(),
+                protocolStats.uniqueProtocolsCount(),
                 firstRequestDate,
                 lastRequestDate);
     }
@@ -135,4 +130,3 @@ public class StatsCollector {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
     }
 }
-

@@ -1,12 +1,12 @@
 package academy.service;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DateRangeTest {
 
@@ -42,5 +42,3 @@ class DateRangeTest {
         assertTrue(range.includes(timestamp));
     }
 }
-
-

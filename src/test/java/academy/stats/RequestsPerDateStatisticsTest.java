@@ -1,12 +1,12 @@
 package academy.stats;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RequestsPerDateStatisticsTest {
 
@@ -21,10 +21,8 @@ class RequestsPerDateStatisticsTest {
 
         assertEquals(
                 List.of(
-                        new RequestPerDateStat(
-                                LocalDate.of(2024, 3, 1), "Friday", 1L, new BigDecimal("33.33")),
-                        new RequestPerDateStat(
-                                LocalDate.of(2024, 3, 2), "Saturday", 2L, new BigDecimal("66.67"))),
+                        new RequestPerDateStat(LocalDate.of(2024, 3, 1), "Friday", 1L, new BigDecimal("33.33")),
+                        new RequestPerDateStat(LocalDate.of(2024, 3, 2), "Saturday", 2L, new BigDecimal("66.67"))),
                 result);
     }
 
@@ -37,5 +35,3 @@ class RequestsPerDateStatisticsTest {
         assertTrue(result.isEmpty());
     }
 }
-
-
