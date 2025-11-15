@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -85,7 +86,7 @@ public class Application implements java.util.concurrent.Callable<Integer> {
         debugArgs(Arrays.asList(args));
 
         // Запуск программы
-        int exitCode = new CommandLine(new Application()).execute(args);
+        int exitCode = new CommandLine(new Application()).execute(sanitizeArgs(args));
         System.exit(exitCode);
     }
 
@@ -166,5 +167,45 @@ public class Application implements java.util.concurrent.Callable<Integer> {
                                 ? "glob: " + it
                                 : "path: %s, exists: %s".formatted(it, Files.exists(Path.of(it))))
                         .collect(Collectors.joining(";")));
+    }
+
+    static String[] sanitizeArgs(String[] args) {
+        if (args == null || args.length == 0) {
+            return args;
+        }
+
+        List<String> sanitized = new ArrayList<>(args.length);
+        boolean optionEncountered = false;
+
+        for (String rawArg : args) {
+            if (rawArg == null) {
+                continue;
+            }
+
+            String trimmed = rawArg.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+
+            if (!optionEncountered) {
+                if (trimmed.startsWith("-") || trimmed.startsWith("@")) {
+                    optionEncountered = true;
+                    sanitized.add(trimmed);
+                }
+                continue;
+            }
+
+            sanitized.add(trimmed);
+        }
+
+        if (!optionEncountered) {
+            return Arrays.stream(args)
+                    .filter(Objects::nonNull)
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+        }
+
+        return sanitized.toArray(String[]::new);
     }
 }
