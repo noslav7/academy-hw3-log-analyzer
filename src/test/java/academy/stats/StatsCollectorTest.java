@@ -51,11 +51,11 @@ class StatsCollectorTest {
                 () -> assertEquals(List.of("part1.log", "part2.log"), result.files()),
                 () -> assertEquals(3L, result.totalRequestsCount()),
                 () -> assertEquals(
-                        new BigDecimal("200.00"), result.responseSizeInBytes().average()),
+                        new BigDecimal("200.0"), result.responseSizeInBytes().average()),
                 () -> assertEquals(
-                        new BigDecimal("300.00"), result.responseSizeInBytes().max()),
+                        new BigDecimal("300.0"), result.responseSizeInBytes().max()),
                 () -> assertEquals(
-                        new BigDecimal("290.00"), result.responseSizeInBytes().p95()),
+                        new BigDecimal("290.0"), result.responseSizeInBytes().p95()),
                 () -> assertEquals(
                         List.of(
                                 new ResourceStat("/downloads/product_1", 2L),
@@ -89,11 +89,11 @@ class StatsCollectorTest {
                 () -> assertTrue(result.files().isEmpty()),
                 () -> assertEquals(0L, result.totalRequestsCount()),
                 () -> assertEquals(
-                        new BigDecimal("0.00"), result.responseSizeInBytes().average()),
+                        new BigDecimal("0.0"), result.responseSizeInBytes().average()),
                 () -> assertEquals(
-                        new BigDecimal("0.00"), result.responseSizeInBytes().max()),
+                        new BigDecimal("0.0"), result.responseSizeInBytes().max()),
                 () -> assertEquals(
-                        new BigDecimal("0.00"), result.responseSizeInBytes().p95()),
+                        new BigDecimal("0.0"), result.responseSizeInBytes().p95()),
                 () -> assertTrue(result.resources().isEmpty()),
                 () -> assertTrue(result.responseCodes().isEmpty()),
                 () -> assertTrue(result.requestsPerDate().isEmpty()),

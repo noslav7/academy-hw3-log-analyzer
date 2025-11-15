@@ -123,10 +123,18 @@ public class StatsCollector {
     }
 
     private static BigDecimal toScaledDecimal(double value) {
-        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
+        return adjustScale(BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP));
     }
 
     private static BigDecimal toScaledDecimal(long value) {
-        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
+        return adjustScale(BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP));
+    }
+
+    private static BigDecimal adjustScale(BigDecimal value) {
+        BigDecimal normalized = value.stripTrailingZeros();
+        if (normalized.scale() < 1) {
+            return normalized.setScale(1, RoundingMode.UNNECESSARY);
+        }
+        return normalized;
     }
 }
