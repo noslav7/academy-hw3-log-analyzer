@@ -41,7 +41,8 @@ public class InputSourceResolver {
 
         List<ResolvedLogSource> resolvedSources = new ArrayList<>();
 
-        for (String input : inputs) {
+        for (String rawInput : inputs) {
+            String input = normalizeInput(rawInput);
             if (isRemote(input)) {
                 resolvedSources.add(resolveRemote(input));
             } else {
@@ -171,6 +172,17 @@ public class InputSourceResolver {
             return "";
         }
         return fileName.substring(lastDot + 1).toLowerCase(Locale.ROOT);
+    }
+
+    private static String normalizeInput(String input) {
+        if (input == null) {
+            throw new InvalidArgumentsException("Input path must not be null");
+        }
+        String trimmed = input.trim();
+        if (trimmed.isEmpty()) {
+            throw new InvalidArgumentsException("Input path must not be blank");
+        }
+        return trimmed;
     }
 
     private static boolean containsGlob(String input) {

@@ -1,143 +1,125 @@
 package academy.formatter;
 
-import static academy.formatter.StatsFormattingSupport.formatDate;
-import static academy.formatter.StatsFormattingSupport.formatDecimal;
-import static academy.formatter.StatsFormattingSupport.formatInteger;
-import static academy.formatter.StatsFormattingSupport.formatSize;
-import static academy.formatter.StatsFormattingSupport.statusDescription;
-
-import academy.stats.RequestPerDateStat;
-import academy.stats.ResourceStat;
-import academy.stats.ResponseCodeStat;
-import academy.stats.ResponseSizeStats;
-import academy.stats.StatsResult;
+import java.util.List;
 import java.util.stream.Collectors;
 
-public class MarkdownStatsFormatter implements StatsFormatter {
+public class MarkdownStatsFormatter extends StructuredStatsFormatter {
+
+    private static final String NEWLINE = System.lineSeparator();
 
     @Override
-    public String format(StatsResult statsResult) {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("#### Общая информация").append(System.lineSeparator()).append(System.lineSeparator());
-        builder.append("|        Метрика        |     Значение |").append(System.lineSeparator());
-        builder.append("|:---------------------:|-------------:|").append(System.lineSeparator());
-        builder.append("|       Файл(-ы)        | ")
-                .append(formatFiles(statsResult))
-                .append(" |")
-                .append(System.lineSeparator());
-        builder.append("|    Начальная дата     | ")
-                .append(formatDate(statsResult.firstRequestDate()))
-                .append(" |")
-                .append(System.lineSeparator());
-        builder.append("|     Конечная дата     | ")
-                .append(formatDate(statsResult.lastRequestDate()))
-                .append(" |")
-                .append(System.lineSeparator());
-        builder.append("|  Количество запросов  | ")
-                .append(formatInteger(statsResult.totalRequestsCount()))
-                .append(" |")
-                .append(System.lineSeparator());
-        builder.append("| Кол-во уникальных протоколов | ")
-                .append(formatInteger(statsResult.uniqueProtocolsCount()))
-                .append(" |")
-                .append(System.lineSeparator());
-
-        ResponseSizeStats responseSizeStats = statsResult.responseSizeInBytes();
-        builder.append("| Средний размер ответа | ")
-                .append(formatSize(responseSizeStats.average()))
-                .append(" |")
-                .append(System.lineSeparator());
-        builder.append("|  Максимальный ответ   | ")
-                .append(formatSize(responseSizeStats.max()))
-                .append(" |")
-                .append(System.lineSeparator());
-        builder.append("|  95p размера ответа   | ")
-                .append(formatSize(responseSizeStats.p95()))
-                .append(" |")
-                .append(System.lineSeparator())
-                .append(System.lineSeparator());
-
-        builder.append("#### Запрашиваемые ресурсы")
-                .append(System.lineSeparator())
-                .append(System.lineSeparator());
-        builder.append("|     Ресурс      | Количество |").append(System.lineSeparator());
-        builder.append("|:---------------:|-----------:|").append(System.lineSeparator());
-        if (statsResult.resources().isEmpty()) {
-            builder.append("|        -        |          0 |").append(System.lineSeparator());
-        } else {
-            for (ResourceStat resourceStat : statsResult.resources()) {
-                builder.append("|  `")
-                        .append(resourceStat.resource())
-                        .append("`  | ")
-                        .append(formatInteger(resourceStat.totalRequestsCount()))
-                        .append(" |")
-                        .append(System.lineSeparator());
-            }
+    protected void renderGeneralInfo(StringBuilder builder, List<GeneralInfoRow> rows) {
+        builder.append("#### Общая информация").append(NEWLINE).append(NEWLINE);
+        builder.append("|        Метрика        |     Значение |").append(NEWLINE);
+        builder.append("|:---------------------:|-------------:|").append(NEWLINE);
+        for (GeneralInfoRow row : rows) {
+            builder.append(labelFor(row.metric()))
+                    .append(row.value())
+                    .append(" |")
+                    .append(NEWLINE);
         }
-        builder.append(System.lineSeparator());
-
-        builder.append("#### Коды ответа").append(System.lineSeparator()).append(System.lineSeparator());
-        builder.append("| Код |          Имя          | Количество |").append(System.lineSeparator());
-        builder.append("|:---:|:---------------------:|-----------:|").append(System.lineSeparator());
-        if (statsResult.responseCodes().isEmpty()) {
-            builder.append("|  -  |           -           |          0 |").append(System.lineSeparator());
-        } else {
-            for (ResponseCodeStat responseCodeStat : statsResult.responseCodes()) {
-                builder.append("| ")
-                        .append(responseCodeStat.code())
-                        .append(" | ")
-                        .append(statusDescription(responseCodeStat.code()))
-                        .append(" | ")
-                        .append(formatInteger(responseCodeStat.totalResponsesCount()))
-                        .append(" |")
-                        .append(System.lineSeparator());
-            }
-        }
-        builder.append(System.lineSeparator());
-
-        builder.append("#### Запросы по датам").append(System.lineSeparator()).append(System.lineSeparator());
-        builder.append("|    Дата    |    День недели    | Количество |  Доля,% |")
-                .append(System.lineSeparator());
-        builder.append("|:----------:|:-----------------:|-----------:|--------:|")
-                .append(System.lineSeparator());
-        if (statsResult.requestsPerDate().isEmpty()) {
-            builder.append("|     -      |         -         |          0 |   0.00 |")
-                    .append(System.lineSeparator());
-        } else {
-            for (RequestPerDateStat perDateStat : statsResult.requestsPerDate()) {
-                builder.append("| ")
-                        .append(perDateStat.date())
-                        .append(" | ")
-                        .append(perDateStat.weekday())
-                        .append(" | ")
-                        .append(formatInteger(perDateStat.totalRequestsCount()))
-                        .append(" | ")
-                        .append(formatDecimal(perDateStat.totalRequestsPercentage()))
-                        .append(" |")
-                        .append(System.lineSeparator());
-            }
-        }
-        builder.append(System.lineSeparator());
-
-        builder.append("#### Используемые протоколы")
-                .append(System.lineSeparator())
-                .append(System.lineSeparator());
-        if (statsResult.uniqueProtocols().isEmpty()) {
-            builder.append("- `-`").append(System.lineSeparator());
-        } else {
-            for (String protocol : statsResult.uniqueProtocols()) {
-                builder.append("- `").append(protocol).append("`").append(System.lineSeparator());
-            }
-        }
-
-        return builder.toString();
+        builder.append(NEWLINE);
     }
 
-    private static String formatFiles(StatsResult statsResult) {
-        if (statsResult.files().isEmpty()) {
+    @Override
+    protected void renderResources(StringBuilder builder, SectionData<ResourceRow> section) {
+        builder.append("#### Запрашиваемые ресурсы").append(NEWLINE).append(NEWLINE);
+        builder.append("|     Ресурс      | Количество |").append(NEWLINE);
+        builder.append("|:---------------:|-----------:|").append(NEWLINE);
+        if (!section.hasData()) {
+            builder.append("|        -        |          0 |").append(NEWLINE);
+        } else {
+            for (ResourceRow row : section.rows()) {
+                builder.append("|  `")
+                        .append(row.resource())
+                        .append("`  | ")
+                        .append(row.totalRequests())
+                        .append(" |")
+                        .append(NEWLINE);
+            }
+        }
+        builder.append(NEWLINE);
+    }
+
+    @Override
+    protected void renderResponseCodes(StringBuilder builder, SectionData<ResponseCodeRow> section) {
+        builder.append("#### Коды ответа").append(NEWLINE).append(NEWLINE);
+        builder.append("| Код |          Имя          | Количество |").append(NEWLINE);
+        builder.append("|:---:|:---------------------:|-----------:|").append(NEWLINE);
+        if (!section.hasData()) {
+            builder.append("|  -  |           -           |          0 |").append(NEWLINE);
+        } else {
+            for (ResponseCodeRow row : section.rows()) {
+                builder.append("| ")
+                        .append(row.code())
+                        .append(" | ")
+                        .append(row.description())
+                        .append(" | ")
+                        .append(row.totalResponses())
+                        .append(" |")
+                        .append(NEWLINE);
+            }
+        }
+        builder.append(NEWLINE);
+    }
+
+    @Override
+    protected void renderRequestsPerDate(StringBuilder builder, SectionData<RequestsPerDateRow> section) {
+        builder.append("#### Запросы по датам").append(NEWLINE).append(NEWLINE);
+        builder.append("|    Дата    |    День недели    | Количество |  Доля,% |")
+                .append(NEWLINE);
+        builder.append("|:----------:|:-----------------:|-----------:|--------:|")
+                .append(NEWLINE);
+        if (!section.hasData()) {
+            builder.append("|     -      |         -         |          0 |   0.00 |")
+                    .append(NEWLINE);
+        } else {
+            for (RequestsPerDateRow row : section.rows()) {
+                builder.append("| ")
+                        .append(row.date())
+                        .append(" | ")
+                        .append(row.weekday())
+                        .append(" | ")
+                        .append(row.totalRequests())
+                        .append(" | ")
+                        .append(row.percentage())
+                        .append(" |")
+                        .append(NEWLINE);
+            }
+        }
+        builder.append(NEWLINE);
+    }
+
+    @Override
+    protected void renderProtocols(StringBuilder builder, SectionData<String> section) {
+        builder.append("#### Используемые протоколы").append(NEWLINE).append(NEWLINE);
+        if (!section.hasData()) {
+            builder.append("- `-`").append(NEWLINE);
+        } else {
+            for (String protocol : section.rows()) {
+                builder.append("- `").append(protocol).append("`").append(NEWLINE);
+            }
+        }
+    }
+
+    @Override
+    protected String formatFilesCell(List<String> files) {
+        if (files.isEmpty()) {
             return "`-`";
         }
-        return statsResult.files().stream().map(file -> "`" + file + "`").collect(Collectors.joining(", "));
+        return files.stream().map(file -> "`" + file + "`").collect(Collectors.joining(", "));
+    }
+
+    private static String labelFor(GeneralMetric metric) {
+        return switch (metric) {
+            case FILES -> "|       Файл(-ы)        | ";
+            case FIRST_DATE -> "|    Начальная дата     | ";
+            case LAST_DATE -> "|     Конечная дата     | ";
+            case TOTAL_REQUESTS -> "|  Количество запросов  | ";
+            case UNIQUE_PROTOCOLS -> "| Кол-во уникальных протоколов | ";
+            case RESPONSE_SIZE_AVERAGE -> "| Средний размер ответа | ";
+            case RESPONSE_SIZE_MAX -> "|  Максимальный ответ   | ";
+            case RESPONSE_SIZE_P95 -> "|  95p размера ответа   | ";
+        };
     }
 }

@@ -4,7 +4,6 @@ import academy.log.LogEntry;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -14,11 +13,11 @@ import java.util.stream.Collectors;
 
 public class StatsCollector {
 
-    private final List<Long> responseSizes = new ArrayList<>();
     private final Map<String, LongAdder> resourceCounters = new ConcurrentHashMap<>();
     private final Map<Integer, LongAdder> responseCodeCounters = new ConcurrentHashMap<>();
     private final RequestsPerDateStatistics requestsPerDateStatistics = new RequestsPerDateStatistics();
     private final ProtocolStatistics protocolStatistics = new ProtocolStatistics();
+    private final PercentileEstimator percentileEstimator = new PercentileEstimator(0.95d);
 
     private long totalRequestsCount;
     private long responseSizeSum;
@@ -30,7 +29,7 @@ public class StatsCollector {
         totalRequestsCount++;
         responseSizeSum += entry.responseSize();
         responseSizeMax = Math.max(responseSizeMax, entry.responseSize());
-        responseSizes.add(entry.responseSize());
+        percentileEstimator.addSample(entry.responseSize());
 
         if (!entry.resource().isBlank()) {
             resourceCounters
@@ -59,7 +58,7 @@ public class StatsCollector {
         ResponseSizeStats responseSizeStats = new ResponseSizeStats(
                 toScaledDecimal(calculateAverage()),
                 toScaledDecimal(responseSizeMax),
-                toScaledDecimal(calculatePercentile(0.95)));
+                toScaledDecimal(percentileEstimator.estimate()));
 
         List<ResourceStat> topResources = resourceCounters.entrySet().stream()
                 .map(entry -> new ResourceStat(entry.getKey(), entry.getValue().sum()))
@@ -99,27 +98,6 @@ public class StatsCollector {
             return 0.0d;
         }
         return (double) responseSizeSum / totalRequestsCount;
-    }
-
-    private double calculatePercentile(double percentile) {
-        if (responseSizes.isEmpty()) {
-            return 0.0d;
-        }
-
-        List<Long> sorted = responseSizes.stream().sorted().collect(Collectors.toList());
-        double rank = percentile * (sorted.size() - 1);
-        int lowerIndex = (int) Math.floor(rank);
-        int upperIndex = (int) Math.ceil(rank);
-
-        if (lowerIndex == upperIndex) {
-            return sorted.get(lowerIndex);
-        }
-
-        double lowerValue = sorted.get(lowerIndex);
-        double upperValue = sorted.get(upperIndex);
-        double weight = rank - lowerIndex;
-
-        return lowerValue + weight * (upperValue - lowerValue);
     }
 
     private static BigDecimal toScaledDecimal(double value) {
