@@ -14,6 +14,11 @@ else
   runtime_image="eclipse-temurin:24-jre"
 fi
 
+echo 'Waiting for Docker daemon...'
+until docker info >/dev/null 2>&1; do
+  sleep 1
+done
+
 echo "Building Docker image logs-app:$tag"
 docker build --build-arg RUNTIME_IMAGE="$runtime_image" . -q -t logs-app:$tag
 
