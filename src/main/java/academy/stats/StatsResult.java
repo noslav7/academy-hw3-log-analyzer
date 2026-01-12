@@ -3,6 +3,7 @@ package academy.stats;
 import java.time.LocalDate;
 import java.util.List;
 
+/** Итоговый снимок статистики, который передаётся форматтерам. */
 public record StatsResult(
         List<String> files,
         long totalRequestsCount,

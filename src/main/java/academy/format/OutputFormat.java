@@ -2,6 +2,7 @@ package academy.format;
 
 import academy.exception.InvalidArgumentsException;
 
+/** Поддерживаемые форматы вывода статистики и их CLI-псевдонимы. */
 public enum OutputFormat {
     JSON("json", ".json"),
     MARKDOWN("markdown", ".md"),

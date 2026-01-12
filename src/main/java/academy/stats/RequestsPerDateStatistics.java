@@ -11,14 +11,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
+/** Считает распределение количества запросов по датам и долю от общего числа. */
 public class RequestsPerDateStatistics {
 
     private final Map<LocalDate, LongAdder> requestsCounters = new ConcurrentHashMap<>();
 
+    /** Увеличивает счётчик запросов для указанной даты. */
     public void register(LocalDate date) {
         requestsCounters.computeIfAbsent(date, key -> new LongAdder()).increment();
     }
 
+    /**
+     * Формирует отсортированный список статистики по датам.
+     *
+     * @param totalRequestsCount общее число запросов (используется для вычисления процентов)
+     * @return список статистик по датам
+     */
     public List<RequestPerDateStat> build(long totalRequestsCount) {
         return requestsCounters.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())

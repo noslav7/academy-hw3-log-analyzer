@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Базовый класс для форматтеров с одинаковым набором секций и структурированных таблиц. */
 abstract class StructuredStatsFormatter implements StatsFormatter {
 
     @Override

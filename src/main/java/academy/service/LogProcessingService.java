@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/** Читает логи построчно, парсит их и передаёт валидные записи в коллектор статистики. */
 public class LogProcessingService {
 
     private static final Logger LOGGER = LogManager.getLogger(LogProcessingService.class);
@@ -19,6 +20,14 @@ public class LogProcessingService {
         this.parser = parser;
     }
 
+    /**
+     * Обрабатывает один источник логов.
+     *
+     * @param reader поток, предоставляющий строки лога
+     * @param sourceName название источника для сообщений логирования
+     * @param dateRange диапазон дат, в который должны попадать записи
+     * @param collector приёмник валидных записей
+     */
     public void process(BufferedReader reader, String sourceName, DateRange dateRange, StatsCollector collector)
             throws IOException {
         String line;

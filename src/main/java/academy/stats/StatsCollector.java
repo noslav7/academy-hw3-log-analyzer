@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
+/** Накопитель метрик, подсчитывающий агрегированную статистику по потокам логов. */
 public class StatsCollector {
 
     private final Map<String, LongAdder> resourceCounters = new ConcurrentHashMap<>();
@@ -25,6 +26,11 @@ public class StatsCollector {
     private LocalDate firstRequestDate;
     private LocalDate lastRequestDate;
 
+    /**
+     * Регистрирует очередную запись лога в статистике.
+     *
+     * @param entry успешно распарсенная строка лога
+     */
     public void register(LogEntry entry) {
         totalRequestsCount++;
         responseSizeSum += entry.responseSize();
@@ -54,6 +60,12 @@ public class StatsCollector {
         }
     }
 
+    /**
+     * Собирает итоговый снимок статистики и сбрасывает его в неизменяемую структуру.
+     *
+     * @param files список обработанных файлов (используется в финальном отчёте)
+     * @return готовый {@link StatsResult}
+     */
     public StatsResult buildResult(List<String> files) {
         ResponseSizeStats responseSizeStats = new ResponseSizeStats(
                 toScaledDecimal(calculateAverage()),

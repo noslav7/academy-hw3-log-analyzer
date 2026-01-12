@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 
+/** Собирает список уникальных протоколов и их частоту появления в логах. */
 public class ProtocolStatistics {
 
     private static final Comparator<Map.Entry<String, LongAdder>> PROTOCOL_COMPARATOR =
@@ -20,6 +21,7 @@ public class ProtocolStatistics {
 
     private final Map<String, LongAdder> protocolCounters = new ConcurrentHashMap<>();
 
+    /** Учитывает очередное значение протокола, если оно непустое. */
     public void register(String protocol) {
         if (protocol == null || protocol.isBlank()) {
             return;
@@ -27,6 +29,7 @@ public class ProtocolStatistics {
         protocolCounters.computeIfAbsent(protocol, key -> new LongAdder()).increment();
     }
 
+    /** Возвращает итоговую статистику по протоколам в заранее определённом порядке. */
     public ProtocolStats build() {
         List<Map.Entry<String, LongAdder>> entries = new ArrayList<>(protocolCounters.entrySet());
         entries.sort(PROTOCOL_COMPARATOR);

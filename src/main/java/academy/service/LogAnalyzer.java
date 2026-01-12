@@ -13,6 +13,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/** Входная точка бизнес-логики: объединяет источники логов, обработку и запись результатов. */
 public class LogAnalyzer {
 
     private static final Logger LOGGER = LogManager.getLogger(LogAnalyzer.class);
@@ -33,6 +34,11 @@ public class LogAnalyzer {
         this.outputFileWriter = outputFileWriter;
     }
 
+    /**
+     * Загружает указанные логи, вычисляет статистику и сохраняет результат в файл.
+     *
+     * @param request параметры анализа (пути, формат, диапазон дат)
+     */
     public void analyze(LogAnalysisRequest request) throws IOException {
         List<ResolvedLogSource> sources = inputSourceResolver.resolve(request.inputPaths());
 

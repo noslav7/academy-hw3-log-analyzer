@@ -4,9 +4,18 @@
 
 echo 'Running acceptance tests...'
 
-tag=$CI_PROJECT_NAME-$CI_COMMIT_SHA
+project_name=${CI_PROJECT_NAME:-logs-app}
+commit_sha=${CI_COMMIT_SHA:-local}
+tag="${project_name}-${commit_sha}"
+
+if [ -n "$GITLAB_DOCKER_PROXY" ]; then
+  runtime_image="${GITLAB_DOCKER_PROXY}/eclipse-temurin:24-jre"
+else
+  runtime_image="eclipse-temurin:24-jre"
+fi
+
 echo "Building Docker image logs-app:$tag"
-docker build --build-arg RUNTIME_IMAGE=$GITLAB_DOCKER_PROXY/eclipse-temurin:24-jre . -q -t logs-app:$tag
+docker build --build-arg RUNTIME_IMAGE="$runtime_image" . -q -t logs-app:$tag
 
 testNumber=0
 failedTests=0

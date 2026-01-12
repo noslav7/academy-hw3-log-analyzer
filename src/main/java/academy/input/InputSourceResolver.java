@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/** Преобразует пользовательские пути и URL в набор открываемых источников логов. */
 public class InputSourceResolver {
 
     private static final Set<String> SUPPORTED_EXTENSIONS = Set.of("log", "txt");
@@ -34,6 +35,12 @@ public class InputSourceResolver {
         this.httpClient = httpClient;
     }
 
+    /**
+     * Анализирует список входных путей и возвращает соответствующие им источники чтения.
+     *
+     * @param inputs пути/URL/глоб-паттерны, переданные через CLI
+     * @return список абстракций, позволяющих открыть каждый файл
+     */
     public List<ResolvedLogSource> resolve(List<String> inputs) {
         if (inputs == null || inputs.isEmpty()) {
             throw new InvalidArgumentsException("No input files were provided");

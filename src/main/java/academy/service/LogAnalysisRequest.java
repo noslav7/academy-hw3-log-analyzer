@@ -5,6 +5,14 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Неизменяемый набор параметров, описывающих запуск анализа логов.
+ *
+ * @param inputPaths пути к файлам/URL
+ * @param outputFormat требуемый формат отчёта
+ * @param outputPath путь к выходному файлу
+ * @param dateRange диапазон дат для фильтрации логов
+ */
 public record LogAnalysisRequest(
         List<String> inputPaths, OutputFormat outputFormat, Path outputPath, DateRange dateRange) {
 

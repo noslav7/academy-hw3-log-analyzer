@@ -25,6 +25,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+/** CLI-приложение для агрегации статистики по NGINX логам. */
 @Command(
         name = "log-analyzer",
         version = "1.0.0",
@@ -92,6 +93,7 @@ public class Application implements java.util.concurrent.Callable<Integer> {
         }
     }
 
+    /** Валидирует полученные аргументы, подготавливает запрос на анализ и запускает обработку логов. */
     private void runApplication() throws IOException {
         OutputFormat outputFormat = OutputFormat.from(formatOption);
         Path outputPath = outputFilePreparer.prepare(outputPathOption, outputFormat);
@@ -102,6 +104,7 @@ public class Application implements java.util.concurrent.Callable<Integer> {
         logAnalyzer.analyze(request);
     }
 
+    /** Собирает набор зависимостей, используемый приложением по умолчанию при запуске из CLI. */
     private static LogAnalyzer createDefaultLogAnalyzer() {
         HttpClient httpClient = HttpClient.newBuilder().build();
         InputSourceResolver resolver = new InputSourceResolver(httpClient);
@@ -111,6 +114,12 @@ public class Application implements java.util.concurrent.Callable<Integer> {
         return new LogAnalyzer(resolver, processingService, formatterFactory, outputFileWriter);
     }
 
+    /**
+     * Удаляет пустые и некорректные аргументы до первого CLI-флага, чтобы Picocli не падал на невалидном вводе.
+     *
+     * @param args аргументы, переданные в {@link #main(String[])}
+     * @return очищенный массив аргументов
+     */
     static String[] sanitizeArgs(String[] args) {
         if (args == null || args.length == 0) {
             return args;

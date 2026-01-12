@@ -3,6 +3,7 @@ package academy.formatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Генерирует отчёт в формате Markdown, используя табличные секции. */
 public class MarkdownStatsFormatter extends StructuredStatsFormatter {
 
     private static final String NEWLINE = System.lineSeparator();

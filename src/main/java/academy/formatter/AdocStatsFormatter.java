@@ -3,6 +3,7 @@ package academy.formatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Формирует отчёт в формате AsciiDoc. */
 public class AdocStatsFormatter extends StructuredStatsFormatter {
 
     private static final String NEWLINE = System.lineSeparator();

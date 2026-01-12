@@ -4,8 +4,16 @@ import academy.exception.InvalidArgumentsException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
+/** Создаёт диапазоны дат на основе строковых значений CLI-параметров. */
 public class DateRangeFactory {
 
+    /**
+     * Парсит входные строки и возвращает валидированный диапазон дат.
+     *
+     * @param fromOption значение параметра {@code --from}
+     * @param toOption значение параметра {@code --to}
+     * @return диапазон, ограниченный указанными датами (могут быть {@code null})
+     */
     public DateRange create(String fromOption, String toOption) {
         LocalDate from = parseDate(fromOption, "--from");
         LocalDate to = parseDate(toOption, "--to");

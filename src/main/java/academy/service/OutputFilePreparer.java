@@ -7,8 +7,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 
+/** Отвечает за проверку пути вывода и подготовку директории перед записью отчёта. */
 public class OutputFilePreparer {
 
+    /**
+     * Валидирует путь под выбранный формат и удостоверяется, что каталог готов к записи.
+     *
+     * @param outputPathOption путь, переданный через CLI
+     * @param format формат файла (определяет ожидаемое расширение)
+     * @return нормализованный путь, готовый к записи
+     */
     public Path prepare(String outputPathOption, OutputFormat format) throws IOException {
         Path outputPath = Path.of(outputPathOption).toAbsolutePath().normalize();
 

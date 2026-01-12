@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+/** Формирует отчёт в JSON-формате согласно описанной схеме. */
 public class JsonStatsFormatter implements StatsFormatter {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()

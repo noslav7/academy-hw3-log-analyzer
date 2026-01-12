@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/** Парсит строки NGINX access-логов в доменные объекты {@link LogEntry}. */
 public class LogEntryParser {
 
     private static final Logger LOGGER = LogManager.getLogger(LogEntryParser.class);
@@ -24,6 +25,12 @@ public class LogEntryParser {
     private static final DateTimeFormatter LOG_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/MMM/yyyy:HH:mm:ss Z", Locale.US);
 
+    /**
+     * Пытается распарсить строку лога. Некорректные строки логируются и приводят к {@link Optional#empty()}.
+     *
+     * @param line строка access-лога
+     * @return распарсенный лог или пустое значение
+     */
     public Optional<LogEntry> parse(String line) {
         Matcher matcher = LOG_PATTERN.matcher(line);
         if (!matcher.matches()) {
