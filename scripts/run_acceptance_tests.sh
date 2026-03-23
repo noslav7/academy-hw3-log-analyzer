@@ -120,6 +120,9 @@ runTest "negative" "unsupported parameter is present" 2 \
 runTest "positive" "properly calculate statistics from multiple local files" 0 \
   -p /tmp/data/input/logs/*.txt -f json -o /tmp/data/output/stats.json
 
+runTest "positive" "properly generate adoc report from local file" 0 \
+  -p /tmp/data/input/logs/part1.txt -f adoc -o /tmp/data/output/report.adoc
+
 assertJsonEquals ./scripts/data/output/expected.json ./scripts/data/output/stats.json
 
 verifyAllTestsPassed

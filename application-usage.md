@@ -17,12 +17,12 @@ mvn -q -DskipTests dependency:copy-dependencies -DincludeScope=runtime -DoutputD
 ## Формат командной строки
 
 ```
-log-analyzer --path <path-or-url> [...] --format <json|markdown> --output <file> [--from <yyyy-MM-dd>] [--to <yyyy-MM-dd>]
+log-analyzer --path <path-or-url> [...] --format <json|markdown|adoc> --output <file> [--from <yyyy-MM-dd>] [--to <yyyy-MM-dd>]
 ```
 
 - `--path/-p` — один или несколько путей: поддерживаются локальные файлы, glob-шаблоны (`logs/2025*`), а также `http(s)://` URL.
-- `--format/-f` — формат результата: `json` или `markdown` (формат `adoc` не реализован и приведёт к ошибке).
-- `--output/-o` — файл для сохранения отчёта. Он **должен отсутствовать**, расширение должно соответствовать формату (`.json` или `.md`), директория должна быть доступна на запись.
+- `--format/-f` — формат результата: `json`, `markdown` или `adoc`.
+- `--output/-o` — файл для сохранения отчёта. Он **должен отсутствовать**, расширение должно соответствовать формату (`.json`, `.md` или `.adoc`), директория должна быть доступна на запись.
 - `--from`, `--to` — необязательные фильтры дат (формат ISO 8601, `yyyy-MM-dd`). Проверяется, что `from <= to`.
 
 Все ошибки валидации и I/O логируются в stdout/stderr (`log4j`) и завершают процесс кодом `2`. Непредвиденные ошибки — код `1`. Успешное выполнение — код `0`.
@@ -54,6 +54,13 @@ mvn -q exec:java `
     --path scripts/data/input/logs/part1.txt scripts/data/input/logs/part2.txt `
     --format json `
     --output target\report.json
+  ```
+- AsciiDoc-отчёт:
+  ```powershell
+  java -cp "target\hw3-logs-1.0.jar;target\lib\*" academy.Application `
+    --path scripts/data/input/logs/part1.txt `
+    --format adoc `
+    --output target\report.adoc
   ```
 
 Каждая команда создаёт указанный файл (путь должен быть свободен). Если хотите перезаписать отчёт, удалите предыдущий файл (`Remove-Item target\report.json`) или задайте новое имя.
@@ -101,7 +108,7 @@ ERROR ... --from must be before or equal to --to
 | Файл по `--path` не найден                           | `ERROR ... File not found: <path>` и код `2`.                                                    |
 | URL вернул 404                                       | `ERROR ... Remote file not found (404): <url>` и код `2`.                                        |
 | Расширение входного файла не `.log`/`.txt`           | `ERROR ... Unsupported file format ... Supported: [log, txt]` и код `2`.                         |
-| Запрошен формат `adoc`                               | `ERROR ... Unsupported format: adoc` и код `2`.                                                  |
+| Запрошен неподдерживаемый формат (например `txt`)    | `ERROR ... Unsupported format: txt` и код `2`.                                                   |
 | Выходной файл уже существует                         | `ERROR ... Output file already exists: <path>` и код `2`.                                        |
 | Указано неизвестное имя опции (например `--input`)   | Picocli печатает usage и сообщение `Unknown options: '--input' ...` + лог `ERROR` + код `2`.     |
 | Неверный формат даты                                 | `ERROR ... Invalid value for --from: <value>. Expected ISO-8601 date (yyyy-MM-dd)` + код `2`.    |
@@ -114,6 +121,7 @@ ERROR ... --from must be before or equal to --to
 
 - JSON-отчёт соответствует схеме из README (`files`, `totalRequestsCount`, `responseSizeInBytes`, `resources`, `responseCodes`, `requestsPerDate`, `uniqueProtocols`).
 - Markdown-отчёт содержит разделы «Общая информация», «Запрашиваемые ресурсы», «Коды ответа», «Запросы по датам», «Используемые протоколы».
+- AsciiDoc-отчёт содержит те же разделы, что и Markdown, но в синтаксисе AsciiDoc.
 
 ## Очистка
 
@@ -121,7 +129,7 @@ ERROR ... --from must be before or equal to --to
 
 ```powershell
 mvn clean
-del target\report.json, target\report.md
+del target\report.json, target\report.md, target\report.adoc
 ```
 
 — после этого проект готов к повторному запуску.
