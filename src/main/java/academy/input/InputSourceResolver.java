@@ -26,11 +26,15 @@ import java.util.stream.Stream;
 /** Преобразует пользовательские пути и URL в набор открываемых источников логов. */
 public class InputSourceResolver {
 
+    /** Разрешённые расширения лог-файлов. */
     private static final Set<String> SUPPORTED_EXTENSIONS = Set.of("log", "txt");
+    /** Параметры обхода файловой системы при обработке glob-паттернов. */
     private static final Set<FileVisitOption> FILE_VISIT_OPTIONS = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
 
+    /** HTTP-клиент для чтения удалённых логов по URL. */
     private final HttpClient httpClient;
 
+    /** Создаёт резолвер источников на основе переданного HTTP-клиента. */
     public InputSourceResolver(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
@@ -64,6 +68,7 @@ public class InputSourceResolver {
         return resolvedSources;
     }
 
+    /** Разрешает удалённый путь и готовит ленивый opener для загрузки файла. */
     private ResolvedLogSource resolveRemote(String input) {
         URI uri;
         try {
@@ -77,6 +82,7 @@ public class InputSourceResolver {
         return new ResolvedLogSource(uri.toString(), () -> openRemote(uri));
     }
 
+    /** Разрешает локальный путь: одиночный файл или glob-шаблон. */
     private List<ResolvedLogSource> resolveLocal(String input) {
         Path path = Path.of(input);
         if (!containsGlob(input)) {
@@ -118,6 +124,7 @@ public class InputSourceResolver {
         }
     }
 
+    /** Проверяет, что путь указывает на существующий локальный файл поддерживаемого формата. */
     private ResolvedLogSource resolveConcreteLocal(Path path) {
         if (!Files.exists(path)) {
             throw new InvalidArgumentsException("File not found: " + path);
@@ -131,6 +138,7 @@ public class InputSourceResolver {
                 fileName(normalized), () -> Files.newBufferedReader(normalized, StandardCharsets.UTF_8));
     }
 
+    /** Выполняет HTTP-запрос и открывает поток чтения удалённого лога. */
     private BufferedReader openRemote(URI uri) throws IOException {
         HttpRequest request = HttpRequest.newBuilder(uri).GET().build();
         try {
@@ -150,6 +158,7 @@ public class InputSourceResolver {
         }
     }
 
+    /** Проверяет расширение локального файла на соответствие разрешённым форматам. */
     private void validateLocalExtension(Path path) {
         String extension = extractExtension(fileName(path));
         if (!SUPPORTED_EXTENSIONS.contains(extension)) {
@@ -158,6 +167,7 @@ public class InputSourceResolver {
         }
     }
 
+    /** Проверяет расширение удалённого ресурса, если оно явно присутствует в URL. */
     private void validateRemoteExtension(URI uri) {
         String path = uri.getPath();
         if (path == null || path.isBlank()) {
@@ -173,6 +183,7 @@ public class InputSourceResolver {
         }
     }
 
+    /** Извлекает расширение файла в нижнем регистре. */
     private static String extractExtension(String fileName) {
         int lastDot = fileName.lastIndexOf('.');
         if (lastDot < 0 || lastDot == fileName.length() - 1) {
@@ -181,6 +192,7 @@ public class InputSourceResolver {
         return fileName.substring(lastDot + 1).toLowerCase(Locale.ROOT);
     }
 
+    /** Нормализует входной параметр пути и валидирует, что он не пустой. */
     private static String normalizeInput(String input) {
         if (input == null) {
             throw new InvalidArgumentsException("Input path must not be null");
@@ -192,15 +204,18 @@ public class InputSourceResolver {
         return trimmed;
     }
 
+    /** Определяет, содержит ли путь glob-символы. */
     private static boolean containsGlob(String input) {
         return input.contains("*") || input.contains("?") || input.contains("[") || input.contains("{");
     }
 
+    /** Определяет, является ли вход удалённым URL. */
     private static boolean isRemote(String input) {
         String lower = input.toLowerCase(Locale.ROOT);
         return lower.startsWith("http://") || lower.startsWith("https://");
     }
 
+    /** Находит базовую директорию, от которой будет вычисляться glob-паттерн. */
     private static Path determineBaseDirectory(Path path) {
         Path base = path.getParent();
         while (base != null && containsGlob(base.toString())) {
@@ -219,6 +234,7 @@ public class InputSourceResolver {
         return base.toAbsolutePath().normalize();
     }
 
+    /** Проверяет, использует ли шаблон рекурсивную маску {@code **}. */
     private static boolean containsRecursiveWildcard(Path pattern) {
         for (Path segment : pattern) {
             if (segment.toString().contains("**")) {
@@ -228,6 +244,7 @@ public class InputSourceResolver {
         return false;
     }
 
+    /** Разрешает относительный паттерн относительно базовой директории. */
     private static Path resolveAgainstBase(Path pattern, Path baseDir) {
         if (pattern.isAbsolute()) {
             return pattern;
@@ -235,6 +252,7 @@ public class InputSourceResolver {
         return baseDir.resolve(pattern).normalize();
     }
 
+    /** Возвращает имя файла из пути или бросает исключение, если его нет. */
     private static String fileName(Path path) {
         Path fileName = path.getFileName();
         if (fileName == null) {

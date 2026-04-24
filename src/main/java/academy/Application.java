@@ -33,6 +33,7 @@ import picocli.CommandLine.Option;
         description = "Analyze NGINX access logs and produce aggregated statistics.")
 public class Application implements java.util.concurrent.Callable<Integer> {
 
+    /** Логгер CLI-приложения. */
     private static final Logger LOGGER = LogManager.getLogger(Application.class);
 
     @Option(
@@ -40,45 +41,57 @@ public class Application implements java.util.concurrent.Callable<Integer> {
             required = true,
             arity = "1..*",
             description = "One or many log file paths")
+    /** Список путей или URL источников логов, переданных пользователем. */
     private List<String> inputPaths = new ArrayList<>();
 
     @Option(
             names = {"-f", "--format"},
             required = true,
             description = "Output format: json, markdown, adoc")
+    /** Строковое значение формата отчёта, указанное в CLI. */
     private String formatOption;
 
     @Option(
             names = {"-o", "--output"},
             required = true,
             description = "Path to output file (must not exist)")
+    /** Путь до выходного файла, введённый пользователем. */
     private String outputPathOption;
 
     @Option(names = "--from", description = "Filter logs from ISO-8601 date (inclusive)")
+    /** Нижняя граница фильтрации дат (включительно). */
     private String fromOption;
 
     @Option(names = "--to", description = "Filter logs to ISO-8601 date (inclusive)")
+    /** Верхняя граница фильтрации дат (включительно). */
     private String toOption;
 
+    /** Фабрика построения диапазона дат на основе CLI-аргументов. */
     private final DateRangeFactory dateRangeFactory;
+    /** Компонент валидации и подготовки выходного пути. */
     private final OutputFilePreparer outputFilePreparer;
+    /** Фасад, выполняющий полный цикл анализа логов. */
     private final LogAnalyzer logAnalyzer;
 
+    /** Создаёт приложение с production-зависимостями по умолчанию. */
     public Application() {
         this(new DateRangeFactory(), new OutputFilePreparer(), createDefaultLogAnalyzer());
     }
 
+    /** Позволяет внедрять зависимости вручную (например, в тестах). */
     Application(DateRangeFactory dateRangeFactory, OutputFilePreparer outputFilePreparer, LogAnalyzer logAnalyzer) {
         this.dateRangeFactory = dateRangeFactory;
         this.outputFilePreparer = outputFilePreparer;
         this.logAnalyzer = logAnalyzer;
     }
 
+    /** Точка входа CLI-приложения. */
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Application()).execute(sanitizeArgs(args));
         System.exit(exitCode);
     }
 
+    /** Запускает приложение и возвращает код завершения процесса. */
     @Override
     public Integer call() {
         try {

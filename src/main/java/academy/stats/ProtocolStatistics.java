@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.LongAdder;
 /** Собирает список уникальных протоколов и их частоту появления в логах. */
 public class ProtocolStatistics {
 
+    /** Компаратор сортировки протоколов для итогового отчёта. */
     private static final Comparator<Map.Entry<String, LongAdder>> PROTOCOL_COMPARATOR =
             Comparator.<Map.Entry<String, LongAdder>, Boolean>comparing(
                             entry -> !entry.getKey().startsWith("HTTP/"))
@@ -19,6 +20,7 @@ public class ProtocolStatistics {
                             Comparator.reverseOrder())
                     .thenComparing(Map.Entry::getKey);
 
+    /** Счётчики количества запросов по каждому протоколу. */
     private final Map<String, LongAdder> protocolCounters = new ConcurrentHashMap<>();
 
     /** Учитывает очередное значение протокола, если оно непустое. */

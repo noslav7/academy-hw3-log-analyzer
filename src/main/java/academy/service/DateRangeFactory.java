@@ -21,6 +21,7 @@ public class DateRangeFactory {
         return new DateRange(from, to);
     }
 
+    /** Парсит строковое значение даты из CLI-параметра. */
     private static LocalDate parseDate(String value, String optionName) {
         if (value == null) {
             return null;
@@ -36,6 +37,7 @@ public class DateRangeFactory {
         }
     }
 
+    /** Проверяет, что нижняя граница диапазона не позже верхней. */
     private static void validateRange(LocalDate from, LocalDate to) {
         if (from != null && to != null && from.isAfter(to)) {
             throw new InvalidArgumentsException("--from must be before or equal to --to");

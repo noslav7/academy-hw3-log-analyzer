@@ -12,10 +12,13 @@ import org.apache.logging.log4j.Logger;
 /** Читает логи построчно, парсит их и передаёт валидные записи в коллектор статистики. */
 public class LogProcessingService {
 
+    /** Логгер для фиксации пропущенных/некорректных строк лога. */
     private static final Logger LOGGER = LogManager.getLogger(LogProcessingService.class);
 
+    /** Парсер строк access-лога. */
     private final LogEntryParser parser;
 
+    /** Создаёт сервис обработки логов с переданным парсером. */
     public LogProcessingService(LogEntryParser parser) {
         this.parser = parser;
     }

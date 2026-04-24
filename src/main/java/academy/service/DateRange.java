@@ -11,6 +11,12 @@ import java.time.ZonedDateTime;
  */
 public record DateRange(LocalDate from, LocalDate to) {
 
+    /**
+     * Проверяет, попадает ли timestamp в диапазон дат.
+     *
+     * @param timestamp дата/время запроса из лога
+     * @return {@code true}, если запись удовлетворяет фильтру
+     */
     public boolean includes(ZonedDateTime timestamp) {
         LocalDate date = timestamp.toLocalDate();
         if (from != null && date.isBefore(from)) {

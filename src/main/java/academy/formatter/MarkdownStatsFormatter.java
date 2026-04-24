@@ -6,8 +6,10 @@ import java.util.stream.Collectors;
 /** Генерирует отчёт в формате Markdown, используя табличные секции. */
 public class MarkdownStatsFormatter extends StructuredStatsFormatter {
 
+    /** Платформенно-зависимый перевод строки. */
     private static final String NEWLINE = System.lineSeparator();
 
+    /** Рендерит общую секцию отчёта в Markdown-таблицу. */
     @Override
     protected void renderGeneralInfo(StringBuilder builder, List<GeneralInfoRow> rows) {
         builder.append("#### Общая информация").append(NEWLINE).append(NEWLINE);
@@ -22,6 +24,7 @@ public class MarkdownStatsFormatter extends StructuredStatsFormatter {
         builder.append(NEWLINE);
     }
 
+    /** Рендерит секцию ресурсов в Markdown-таблицу. */
     @Override
     protected void renderResources(StringBuilder builder, SectionData<ResourceRow> section) {
         builder.append("#### Запрашиваемые ресурсы").append(NEWLINE).append(NEWLINE);
@@ -42,6 +45,7 @@ public class MarkdownStatsFormatter extends StructuredStatsFormatter {
         builder.append(NEWLINE);
     }
 
+    /** Рендерит секцию HTTP-кодов ответа в Markdown-таблицу. */
     @Override
     protected void renderResponseCodes(StringBuilder builder, SectionData<ResponseCodeRow> section) {
         builder.append("#### Коды ответа").append(NEWLINE).append(NEWLINE);
@@ -64,6 +68,7 @@ public class MarkdownStatsFormatter extends StructuredStatsFormatter {
         builder.append(NEWLINE);
     }
 
+    /** Рендерит секцию запросов по датам в Markdown-таблицу. */
     @Override
     protected void renderRequestsPerDate(StringBuilder builder, SectionData<RequestsPerDateRow> section) {
         builder.append("#### Запросы по датам").append(NEWLINE).append(NEWLINE);
@@ -91,6 +96,7 @@ public class MarkdownStatsFormatter extends StructuredStatsFormatter {
         builder.append(NEWLINE);
     }
 
+    /** Рендерит список протоколов в виде Markdown-списка. */
     @Override
     protected void renderProtocols(StringBuilder builder, SectionData<String> section) {
         builder.append("#### Используемые протоколы").append(NEWLINE).append(NEWLINE);
@@ -103,6 +109,7 @@ public class MarkdownStatsFormatter extends StructuredStatsFormatter {
         }
     }
 
+    /** Форматирует список файлов для вывода в одной ячейке Markdown-таблицы. */
     @Override
     protected String formatFilesCell(List<String> files) {
         if (files.isEmpty()) {
@@ -111,6 +118,7 @@ public class MarkdownStatsFormatter extends StructuredStatsFormatter {
         return files.stream().map(file -> "`" + file + "`").collect(Collectors.joining(", "));
     }
 
+    /** Возвращает человекочитаемую подпись метрики для секции общей информации. */
     private static String labelFor(GeneralMetric metric) {
         return switch (metric) {
             case FILES -> "|       Файл(-ы)        | ";

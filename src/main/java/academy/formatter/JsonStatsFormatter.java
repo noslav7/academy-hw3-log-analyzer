@@ -16,11 +16,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 /** Формирует отчёт в JSON-формате согласно описанной схеме. */
 public class JsonStatsFormatter implements StatsFormatter {
 
+    /** Объект сериализации JSON с поддержкой Java Time и pretty print. */
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             .enable(SerializationFeature.INDENT_OUTPUT);
 
+    /** Преобразует статистику в JSON-структуру согласно контракту отчёта. */
     @Override
     public String format(StatsResult statsResult) {
         ObjectNode root = OBJECT_MAPPER.createObjectNode();

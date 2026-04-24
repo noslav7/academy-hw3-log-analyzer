@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 /** Считает распределение количества запросов по датам и долю от общего числа. */
 public class RequestsPerDateStatistics {
 
+    /** Счётчики количества запросов по датам. */
     private final Map<LocalDate, LongAdder> requestsCounters = new ConcurrentHashMap<>();
 
     /** Увеличивает счётчик запросов для указанной даты. */
@@ -34,6 +35,7 @@ public class RequestsPerDateStatistics {
                 .collect(Collectors.toList());
     }
 
+    /** Преобразует запись счётчика даты в формат финальной статистики. */
     private static RequestPerDateStat toStat(Map.Entry<LocalDate, LongAdder> entry, long totalRequestsCount) {
         long count = entry.getValue().sum();
         BigDecimal percentage = totalRequestsCount == 0

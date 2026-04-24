@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/** Перечень распространённых HTTP-статусов с человекочитаемыми описаниями. */
 public enum HttpStatus {
     CONTINUE(100, "Continue"),
     SWITCHING_PROTOCOLS(101, "Switching Protocols"),
@@ -26,10 +27,13 @@ public enum HttpStatus {
     BAD_GATEWAY(502, "Bad Gateway"),
     SERVICE_UNAVAILABLE(503, "Service Unavailable");
 
+    /** Быстрый индекс: код статуса -> enum-значение. */
     private static final Map<Integer, HttpStatus> INDEX = EnumSet.allOf(HttpStatus.class).stream()
             .collect(Collectors.toUnmodifiableMap(HttpStatus::code, Function.identity()));
 
+    /** Числовой код HTTP-статуса. */
     private final int code;
+    /** Текстовое описание HTTP-статуса. */
     private final String description;
 
     HttpStatus(int code, String description) {
@@ -37,14 +41,22 @@ public enum HttpStatus {
         this.description = description;
     }
 
+    /** Возвращает числовой код статуса. */
     public int code() {
         return code;
     }
 
+    /** Возвращает текстовое описание статуса. */
     public String description() {
         return description;
     }
 
+    /**
+     * Возвращает описание по коду HTTP-статуса.
+     *
+     * @param code HTTP-код ответа
+     * @return известное описание или {@code "Unknown"}
+     */
     public static String descriptionFor(int code) {
         HttpStatus status = INDEX.get(code);
         return status == null ? "Unknown" : status.description();

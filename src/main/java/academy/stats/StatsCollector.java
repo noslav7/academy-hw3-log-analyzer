@@ -14,16 +14,26 @@ import java.util.stream.Collectors;
 /** Накопитель метрик, подсчитывающий агрегированную статистику по потокам логов. */
 public class StatsCollector {
 
+    /** Счётчики запросов по ресурсам. */
     private final Map<String, LongAdder> resourceCounters = new ConcurrentHashMap<>();
+    /** Счётчики ответов по HTTP-кодам. */
     private final Map<Integer, LongAdder> responseCodeCounters = new ConcurrentHashMap<>();
+    /** Агрегатор статистики запросов по датам. */
     private final RequestsPerDateStatistics requestsPerDateStatistics = new RequestsPerDateStatistics();
+    /** Агрегатор статистики используемых протоколов. */
     private final ProtocolStatistics protocolStatistics = new ProtocolStatistics();
+    /** Оценщик 95-процентиля размера ответа. */
     private final PercentileEstimator percentileEstimator = new PercentileEstimator(0.95d);
 
+    /** Общее количество валидных запросов. */
     private long totalRequestsCount;
+    /** Суммарный размер всех ответов. */
     private long responseSizeSum;
+    /** Максимальный размер ответа. */
     private long responseSizeMax;
+    /** Наиболее ранняя дата запроса. */
     private LocalDate firstRequestDate;
+    /** Наиболее поздняя дата запроса. */
     private LocalDate lastRequestDate;
 
     /**
@@ -105,6 +115,7 @@ public class StatsCollector {
                 lastRequestDate);
     }
 
+    /** Вычисляет средний размер ответа. */
     private double calculateAverage() {
         if (totalRequestsCount == 0) {
             return 0.0d;
@@ -112,14 +123,17 @@ public class StatsCollector {
         return (double) responseSizeSum / totalRequestsCount;
     }
 
+    /** Преобразует дробное значение к нормализованному формату десятичного числа. */
     private static BigDecimal toScaledDecimal(double value) {
         return adjustScale(BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP));
     }
 
+    /** Преобразует целочисленное значение к нормализованному формату десятичного числа. */
     private static BigDecimal toScaledDecimal(long value) {
         return adjustScale(BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP));
     }
 
+    /** Удаляет лишние нули, сохраняя минимум один знак после запятой. */
     private static BigDecimal adjustScale(BigDecimal value) {
         BigDecimal normalized = value.stripTrailingZeros();
         if (normalized.scale() < 1) {

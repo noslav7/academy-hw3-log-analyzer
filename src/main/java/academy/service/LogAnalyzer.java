@@ -16,13 +16,19 @@ import org.apache.logging.log4j.Logger;
 /** Входная точка бизнес-логики: объединяет источники логов, обработку и запись результатов. */
 public class LogAnalyzer {
 
+    /** Логгер основного пайплайна анализа. */
     private static final Logger LOGGER = LogManager.getLogger(LogAnalyzer.class);
 
+    /** Компонент разрешения входных путей в реальные источники логов. */
     private final InputSourceResolver inputSourceResolver;
+    /** Сервис построчной обработки логов. */
     private final LogProcessingService logProcessingService;
+    /** Фабрика форматтеров итогового отчёта. */
     private final StatsFormatterFactory statsFormatterFactory;
+    /** Компонент физической записи отчёта в файл. */
     private final OutputFileWriter outputFileWriter;
 
+    /** Создаёт анализатор с явно переданными зависимостями. */
     public LogAnalyzer(
             InputSourceResolver inputSourceResolver,
             LogProcessingService logProcessingService,

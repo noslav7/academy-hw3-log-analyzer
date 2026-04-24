@@ -6,14 +6,21 @@ import java.util.List;
 
 final class PercentileEstimator {
 
+    /** Количество маркеров алгоритма P². */
     private static final int MARKERS = 5;
+    /** Порог числа сэмплов для перехода от точного расчёта к потоковой оценке. */
     private static final int EXACT_THRESHOLD = 10_000;
 
+    /** Целевой процентиль (например, 0.95). */
     private final double percentile;
+    /** Буфер точных сэмплов для небольших выборок. */
     private final List<Long> exactSamples = new ArrayList<>();
+    /** Потоковый оценщик P² для больших объёмов данных. */
     private P2Estimator streamingEstimator;
+    /** Общее количество зарегистрированных значений. */
     private long count;
 
+    /** Создаёт оценщик для заданного процентиля. */
     PercentileEstimator(double percentile) {
         if (percentile <= 0.0d || percentile >= 1.0d) {
             throw new IllegalArgumentException("percentile must be between 0 and 1");
@@ -21,6 +28,7 @@ final class PercentileEstimator {
         this.percentile = percentile;
     }
 
+    /** Добавляет очередной размер ответа в расчёт процентиля. */
     void addSample(long value) {
         count++;
         if (streamingEstimator == null) {
@@ -33,6 +41,7 @@ final class PercentileEstimator {
         }
     }
 
+    /** Возвращает оценённое значение процентиля по накопленным данным. */
     double estimate() {
         if (count == 0) {
             return 0.0d;
@@ -45,6 +54,7 @@ final class PercentileEstimator {
         return streamingEstimator.estimate();
     }
 
+    /** Переключает оценку в потоковый режим и переносит накопленные сэмплы в P²-оценщик. */
     private void switchToStreaming() {
         streamingEstimator = new P2Estimator(percentile);
         for (long sample : exactSamples) {
@@ -53,6 +63,7 @@ final class PercentileEstimator {
         exactSamples.clear();
     }
 
+    /** Точно вычисляет процентиль по отсортированной выборке с линейной интерполяцией. */
     private static double precisePercentile(List<Long> sorted, double percentile) {
         if (sorted.isEmpty()) {
             return 0.0d;
@@ -71,15 +82,23 @@ final class PercentileEstimator {
 
     private static final class P2Estimator {
 
+        /** Целевой процентиль для потоковой оценки. */
         private final double percentile;
+        /** Высоты (значения) маркеров P². */
         private final double[] markerHeights = new double[MARKERS];
+        /** Текущие позиции маркеров. */
         private final double[] markerPositions = new double[MARKERS];
+        /** Желаемые позиции маркеров. */
         private final double[] desiredPositions = new double[MARKERS];
+        /** Приращения желаемых позиций после каждого сэмпла. */
         private final double[] increments = new double[MARKERS];
+        /** Первые сэмплы до полной инициализации маркеров. */
         private final List<Long> initialSamples = new ArrayList<>(MARKERS);
 
+        /** Флаг, показывающий, инициализированы ли маркеры. */
         private boolean initialized;
 
+        /** Создаёт внутренний P²-оценщик для указанного процентиля. */
         private P2Estimator(double percentile) {
             this.percentile = percentile;
             increments[0] = 0.0d;
@@ -89,6 +108,7 @@ final class PercentileEstimator {
             increments[4] = 1.0d;
         }
 
+        /** Добавляет значение в потоковую оценку процентиля. */
         private void addSample(long value) {
             if (!initialized) {
                 initialSamples.add(value);
@@ -100,6 +120,7 @@ final class PercentileEstimator {
             updateMarkers(value);
         }
 
+        /** Возвращает текущую оценку процентиля. */
         private double estimate() {
             if (!initialized) {
                 List<Long> sorted = new ArrayList<>(initialSamples);
@@ -109,6 +130,7 @@ final class PercentileEstimator {
             return markerHeights[2];
         }
 
+        /** Инициализирует маркеры после получения первых пяти значений. */
         private void initializeMarkers() {
             Collections.sort(initialSamples);
             for (int i = 0; i < MARKERS; i++) {
@@ -124,6 +146,7 @@ final class PercentileEstimator {
             initialized = true;
         }
 
+        /** Обновляет позиции и высоты маркеров после поступления нового значения. */
         private void updateMarkers(long value) {
             int k;
             if (value < markerHeights[0]) {
@@ -165,6 +188,7 @@ final class PercentileEstimator {
             }
         }
 
+        /** Выполняет параболическое обновление высоты маркера. */
         private double parabolicUpdate(int index, double direction) {
             double hp = markerHeights[index];
             double hp1 = markerHeights[index + 1];
@@ -179,6 +203,7 @@ final class PercentileEstimator {
             return hp + numerator / (np1 - nm1);
         }
 
+        /** Выполняет линейное обновление высоты маркера как fallback. */
         private double linearUpdate(int index, int direction) {
             int adjacent = index + direction;
             return markerHeights[index]

@@ -16,6 +16,7 @@ import java.util.Objects;
 public record LogAnalysisRequest(
         List<String> inputPaths, OutputFormat outputFormat, Path outputPath, DateRange dateRange) {
 
+    /** Валидирует и нормализует входные параметры запроса анализа. */
     public LogAnalysisRequest {
         Objects.requireNonNull(inputPaths, "inputPaths must not be null");
         Objects.requireNonNull(outputFormat, "outputFormat must not be null");

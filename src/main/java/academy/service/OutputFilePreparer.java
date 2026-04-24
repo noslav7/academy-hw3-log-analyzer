@@ -27,12 +27,14 @@ public class OutputFilePreparer {
         return outputPath;
     }
 
+    /** Проверяет, что файл по целевому пути ещё не существует. */
     private static void ensureFileDoesNotExist(Path outputPath) {
         if (Files.exists(outputPath)) {
             throw new InvalidArgumentsException("Output file already exists: " + outputPath);
         }
     }
 
+    /** Проверяет соответствие расширения файла выбранному формату отчёта. */
     private static void ensureExtensionMatchesFormat(Path outputPath, OutputFormat format) {
         String fileName = fileName(outputPath);
         String extension = extractExtension(fileName);
@@ -43,6 +45,7 @@ public class OutputFilePreparer {
         }
     }
 
+    /** Создаёт родительский каталог при необходимости и проверяет его на доступность записи. */
     private static void ensureParentDirectoryReady(Path outputPath) throws IOException {
         Path parent = outputPath.getParent();
         if (parent == null) {
@@ -56,6 +59,7 @@ public class OutputFilePreparer {
         }
     }
 
+    /** Извлекает расширение имени файла. */
     private static String extractExtension(String fileName) {
         int lastDot = fileName.lastIndexOf('.');
         if (lastDot < 0 || lastDot == fileName.length() - 1) {
@@ -64,6 +68,7 @@ public class OutputFilePreparer {
         return fileName.substring(lastDot + 1).toLowerCase(Locale.ROOT);
     }
 
+    /** Безопасно получает имя файла из пути вывода. */
     private static String fileName(Path path) {
         Path fileName = path.getFileName();
         if (fileName == null) {

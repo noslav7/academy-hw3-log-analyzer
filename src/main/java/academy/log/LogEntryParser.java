@@ -14,14 +14,21 @@ import org.apache.logging.log4j.Logger;
 /** Парсит строки NGINX access-логов в доменные объекты {@link LogEntry}. */
 public class LogEntryParser {
 
+    /** Логгер предупреждений о некорректных строках лога. */
     private static final Logger LOGGER = LogManager.getLogger(LogEntryParser.class);
 
+    /** Максимальная длина одиночных токенов (IP, ident, user). */
     private static final int MAX_TOKEN_LENGTH = 256;
+    /** Максимальная длина временной метки внутри квадратных скобок. */
     private static final int MAX_TIME_LENGTH = 64;
+    /** Максимальная длина HTTP-запроса внутри кавычек. */
     private static final int MAX_REQUEST_LENGTH = 4096;
+    /** Максимальная длина полей referer/user-agent. */
     private static final int MAX_HEADER_LENGTH = 4096;
 
+    /** Скомпилированный шаблон строки access-лога. */
     private static final Pattern LOG_PATTERN = Pattern.compile(buildLogPattern());
+    /** Формат временной метки NGINX access-лога. */
     private static final DateTimeFormatter LOG_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("d/MMM/yyyy:HH:mm:ss Z", Locale.US);
 
@@ -63,6 +70,7 @@ public class LogEntryParser {
                 responseSize));
     }
 
+    /** Преобразует placeholder-значения из лога (например, {@code -}) в пустую строку. */
     private static String normalizeValue(String value) {
         if (value == null || "-".equals(value)) {
             return "";
@@ -70,6 +78,7 @@ public class LogEntryParser {
         return value;
     }
 
+    /** Разбивает текст запроса на метод, ресурс и протокол. */
     private static RequestParts extractRequestParts(String request) {
         if (request == null || request.isBlank() || "-".equals(request)) {
             return new RequestParts("", "", "");
@@ -89,8 +98,10 @@ public class LogEntryParser {
         return new RequestParts(method, resource, protocol);
     }
 
+    /** Внутренняя структура для хранения разобранных частей HTTP-запроса. */
     private record RequestParts(String method, String resource, String protocol) {}
 
+    /** Собирает regex для безопасного и ограниченного по длине парсинга строк лога. */
     private static String buildLogPattern() {
         return String.format(
                 "^"
