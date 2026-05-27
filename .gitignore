@@ -22,6 +22,9 @@ dependency-reduced-pom.xml
 ### Documentation (local only) ###
 docs/
 
+### GitLab (local only) ###
+.gitlab/
+
 ### log files ###
 *.log
 hs_err_pid*
