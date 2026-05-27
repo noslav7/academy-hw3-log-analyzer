@@ -19,8 +19,13 @@ dependency-reduced-pom.xml
 ### Scala SBT
 .bsp
 
+### Documentation (local only) ###
+docs/
+
 ### log files ###
 *.log
 hs_err_pid*
 scripts/data/output/*.json
 .vscode/settings.json
+scripts/generate_presentation_diagrams.ps1
+scripts/generate_presentation_pptx.ps1
