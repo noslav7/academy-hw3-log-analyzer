@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/** Оценивает процентиль размера ответа: точно для малых выборок и потоковым алгоритмом P² для больших. */
 final class PercentileEstimator {
 
     /** Количество маркеров алгоритма P². */
