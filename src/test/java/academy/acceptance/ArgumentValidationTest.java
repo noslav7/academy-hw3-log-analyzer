@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -95,7 +96,7 @@ public class ArgumentValidationTest {
         Path output = tempDir.resolve("result.json");
 
         CommandLine commandLine = TestUtils.newCommandLine();
-        List<String> args = new java.util.ArrayList<>(
+        List<String> args = new ArrayList<>(
                 List.of("--path", log.toString(), "--format", "json", "--output", output.toString()));
 
         if (from == null) {
@@ -167,7 +168,7 @@ public class ArgumentValidationTest {
         Path log = TestUtils.createLogFile(tempDir, "access.log", List.of(TestUtils.SAMPLE_LOG_LINE));
         Path output = tempDir.resolve("report.json");
 
-        List<String> args = new java.util.ArrayList<>();
+        List<String> args = new ArrayList<>();
 
         if (!argument.equals("--path") && !argument.equals("-p")) {
             args.add("--path");

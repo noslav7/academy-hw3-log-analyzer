@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 /**
- * Описывает один источник логов и способ получить {@link java.io.BufferedReader} для него.
+ * Описывает один источник логов и способ получить {@link BufferedReader} для него.
  *
  * @param displayName человекочитаемое название (имя файла, URL и т.д.)
  * @param opener лямбда, предоставляющая поток чтения

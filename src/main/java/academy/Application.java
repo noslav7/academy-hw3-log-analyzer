@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
@@ -31,7 +32,7 @@ import picocli.CommandLine.Option;
         version = "1.0.0",
         mixinStandardHelpOptions = true,
         description = "Analyze NGINX access logs and produce aggregated statistics.")
-public class Application implements java.util.concurrent.Callable<Integer> {
+public class Application implements Callable<Integer> {
 
     /** Логгер CLI-приложения. */
     private static final Logger LOGGER = LogManager.getLogger(Application.class);

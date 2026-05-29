@@ -3,6 +3,7 @@ package academy.input;
 import academy.exception.InvalidArgumentsException;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -142,7 +143,7 @@ public class InputSourceResolver {
     private BufferedReader openRemote(URI uri) throws IOException {
         HttpRequest request = HttpRequest.newBuilder(uri).GET().build();
         try {
-            HttpResponse<java.io.InputStream> response =
+            HttpResponse<InputStream> response =
                     httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
             if (response.statusCode() == 404) {
                 throw new InvalidArgumentsException("Remote file not found (404): " + uri);
